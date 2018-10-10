@@ -312,7 +312,7 @@ endif ()
 # ----------------------------------------------------------------------------
 # Require C++ Filesystem
 # ----------------------------------------------------------------------------
-option(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM "Search: Is Boost filesystem available?" ON)
+option(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM "Search: Is Boost filesystem available?" OFF)
 if(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM)
     find_package(Boost REQUIRED COMPONENTS filesystem)
 endif()
