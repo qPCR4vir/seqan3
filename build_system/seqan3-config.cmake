@@ -98,7 +98,7 @@
 # ============================================================================
 
 cmake_minimum_required (VERSION 3.2...3.12)
-
+include(CMakePrintHelpers)
 # ----------------------------------------------------------------------------
 # Set initial variables
 # ----------------------------------------------------------------------------
@@ -312,6 +312,10 @@ endif ()
 # ----------------------------------------------------------------------------
 # Require C++ Filesystem
 # ----------------------------------------------------------------------------
+option(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM "Search: Is Boost filesystem available?" ON)
+if(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM)
+    find_package(Boost REQUIRED COMPONENTS filesystem)
+endif()
 
 # find the correct header
 check_include_file_cxx (filesystem _SEQAN3_HAVE_FILESYSTEM)
@@ -335,6 +339,10 @@ elseif (_SEQAN3_HAVE_EXP_FILESYSTEM)
         {
             std::experimental::filesystem::path p{\"/tmp/\"};
         }")
+elseif(Boost_FOUND)
+    seqan3_config_print ("C++ Filesystem header:      <boost/filesystem.hpp>")
+    set(Boost_USE_STATIC_LIBS ON)
+    set(Boost_USE_STATIC_RUNTIME ON)
 else ()
     seqan3_config_error ("SeqAn3 requires C++17 filesystem support, but the filesystem header was not found.")
 endif ()
@@ -361,6 +369,14 @@ else ()
         endif ()
     endforeach ()
 
+    if (NOT C++17FS_LIB)
+        if(Boost_FOUND)
+         set (SEQAN3_LIBRARIES    ${SEQAN3_LIBRARIES}    ${Boost_LIBRARIES})
+         set (SEQAN3_INCLUDE_DIRS ${SEQAN3_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
+         set (C++17FS_LIB         ${Boost_LIBRARIES})
+        endif ()
+    endif()
+
     if (C++17FS_LIB)
         seqan3_config_print ("C++ Filesystem library:     via -l${C++17FS_LIB}")
     else ()
@@ -377,7 +393,7 @@ check_include_file_cxx (range/v3/version.hpp _SEQAN3_HAVE_RANGEV3)
 if (_SEQAN3_HAVE_RANGEV3)
     seqan3_config_print ("Required dependency:        Range-V3 found.")
 else ()
-    seqan3_config_error ("The range-v3 library is required, but wasn't found. Get it from https://github.com/ericniebler/range-v3/")
+    #seqan3_config_error ("The range-v3 library is required, but wasn't found. Get it from https://github.com/ericniebler/range-v3/")
 endif ()
 
 check_include_file_cxx (sdsl/version.hpp _SEQAN3_HAVE_SDSL)
@@ -385,7 +401,7 @@ check_include_file_cxx (sdsl/version.hpp _SEQAN3_HAVE_SDSL)
 if (_SEQAN3_HAVE_SDSL)
     seqan3_config_print ("Required dependency:        SDSL found.")
 else ()
-    seqan3_config_error ("The SDSL library is required, but wasn't found. Get it from https://github.com/xxsds/sdsl-lite")
+    #seqan3_config_error ("The SDSL library is required, but wasn't found. Get it from https://github.com/xxsds/sdsl-lite")
 endif ()
 
 # ----------------------------------------------------------------------------
@@ -399,13 +415,13 @@ if (NOT SEQAN3_NO_CEREAL)
         if (SEQAN3_CEREAL)
             seqan3_config_print ("Required dependency:        Cereal found.")
         else ()
-            seqan3_config_print ("Optional dependency:        Cereal found.")
+            #seqan3_config_print ("Optional dependency:        Cereal found.")
         endif ()
     else ()
         if (SEQAN3_CEREAL)
             seqan3_config_error ("The (optional) cereal library was marked as required, but wasn't found.")
         else ()
-            seqan3_config_print ("Optional dependency:        Cereal not found.")
+            #seqan3_config_print ("Optional dependency:        Cereal not found.")
         endif ()
     endif ()
 endif ()
@@ -427,7 +443,7 @@ if (NOT SEQAN3_NO_LEMON)
         if (SEQAN3_LEMON)
             seqan3_config_error ("The (optional) Lemon library was marked as required, but wasn't found.")
         else ()
-            seqan3_config_print ("Optional dependency:        Lemon not found.")
+            #seqan3_config_print ("Optional dependency:        Lemon not found.")
         endif ()
     endif ()
 endif ()
