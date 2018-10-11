@@ -49,7 +49,7 @@ macro (seqan3_benchmark target_cpp)
     set (target "${target_name}_benchmark")
 
     add_executable (${target} ${target_cpp})
-    target_link_libraries (${target} seqan3::test::performance)
+    target_link_libraries (${target} seqan3::test::performance  shlwapi.lib)
     add_test (NAME "${benchmark_path}/${target}" COMMAND ${target})
 
     unset (target_name)
