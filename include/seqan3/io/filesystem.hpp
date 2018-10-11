@@ -36,10 +36,12 @@
  * \brief This header includes C++17 filesystem support and imports it into namespace seqan3::filesystem (independent of whether it is marked as "experimental").
  * \author Vitor C. Piro <pirov AT zedat.fu-berlin.de >
  */
-
+aljdljalkjgv
 #pragma once
 
-#if __has_include(<filesystem>)
+#ifdef BOOST_FILESYSTEM_FORCE
+#  include <boost/filesystem>
+#elif __has_include(<filesystem>)
 #include <filesystem>
 #else
 #include <experimental/filesystem>
@@ -49,9 +51,12 @@
 
 namespace seqan3
 {
-#if __has_include(<filesystem>)
+#ifdef BOOST_FILESYSTEM_FORCE
+namespace filesystem = boost::filesystem;  asjkdfhpajksd
+#elif __has_include(<filesystem>)
 namespace filesystem = std::filesystem;
 #else
 namespace filesystem = std::experimental::filesystem;
 #endif // __has_include(experimental/filesystem)
 } // namespace seqan3
+

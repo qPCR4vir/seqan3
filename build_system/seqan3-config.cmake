@@ -313,13 +313,22 @@ endif ()
 # Require C++ Filesystem
 # ----------------------------------------------------------------------------
 option(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM "Search: Is Boost filesystem available?" OFF)
-if(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM)
+option(SEQAN3_CMAKE_BOOST_FILESYSTEM_FORCE "Force use of Boost filesystem if available (over STD)?" OFF)
+if (SEQAN3_CMAKE_BOOST_FILESYSTEM_FORCE)
+    add_compile_definitions(BOOST_FILESYSTEM_FORCE)
     find_package(Boost REQUIRED COMPONENTS filesystem)
+    set (CXXSTD_TEST_SOURCE
+            "#error FORCE_BOOST_FS
+             int main()  { }")
+elseif(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM)
+    find_package(Boost COMPONENTS filesystem)
 endif()
 
 # find the correct header
-check_include_file_cxx (filesystem _SEQAN3_HAVE_FILESYSTEM)
-check_include_file_cxx (experimental/filesystem _SEQAN3_HAVE_EXP_FILESYSTEM)
+if (NOT SEQAN3_CMAKE_BOOST_FILESYSTEM_FORCE)
+    check_include_file_cxx (filesystem _SEQAN3_HAVE_FILESYSTEM)
+    check_include_file_cxx (experimental/filesystem _SEQAN3_HAVE_EXP_FILESYSTEM)
+endif()
 
 if (_SEQAN3_HAVE_FILESYSTEM)
     seqan3_config_print ("C++ Filesystem header:      <filesystem>")
