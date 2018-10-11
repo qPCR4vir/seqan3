@@ -39,7 +39,9 @@
 #pragma once
 
 #ifdef BOOST_FILESYSTEM_FORCE
+#  include <chrono>
 #  include <boost/filesystem>
+
 #elif __has_include(<filesystem>)
 #include <filesystem>
 #else
@@ -51,7 +53,24 @@
 namespace seqan3
 {
 #ifdef BOOST_FILESYSTEM_FORCE
-namespace filesystem = boost::filesystem;  
+    namespace filesystem {
+        using namespace boost::filesystem;
+        using file_time_type = std::chrono::time_point<std::chrono::system_clock>;
+
+        enum class file_type {
+            none      = boost::filesystem::file_type::status_unknown,
+            not_found = boost::filesystem::file_type::file_not_found,
+            regular   = boost::filesystem::file_type::regular_file,
+            directory = boost::filesystem::file_type::directory_file,
+            symlink   = boost::filesystem::file_type::symlink_file,
+            block     = boost::filesystem::file_type::block_file,
+            character = boost::filesystem::file_type::character_file,
+            fifo      = boost::filesystem::file_type::fifo_file,
+            socket    = boost::filesystem::file_type::socket_file,
+            unknown   = boost::filesystem::file_type::type_unknown
+        };
+    } // filesystem
+
 #elif __has_include(<filesystem>)
 namespace filesystem = std::filesystem;
 #else
