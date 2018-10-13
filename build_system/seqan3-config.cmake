@@ -380,7 +380,7 @@ else ()
 
     if (NOT C++17FS_LIB)
         if(Boost_FOUND)
-         set (SEQAN3_LIBRARIES    ${SEQAN3_LIBRARIES}    ${Boost_LIBRARIES})
+         set (SEQAN3_LIBRARIES    ${SEQAN3_LIBRARIES}   SYSTEM ${Boost_LIBRARIES})
          set (SEQAN3_INCLUDE_DIRS ${SEQAN3_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
          set (C++17FS_LIB         ${Boost_LIBRARIES})
         endif ()

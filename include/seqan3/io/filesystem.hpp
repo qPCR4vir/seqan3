@@ -40,7 +40,7 @@
 
 #ifdef BOOST_FILESYSTEM_FORCE
 #  include <chrono>
-#  include <boost/filesystem>
+#  include <boost/filesystem.hpp>
 
 #elif __has_include(<filesystem>)
 #include <filesystem>
