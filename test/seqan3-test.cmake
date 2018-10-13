@@ -55,6 +55,9 @@ set (SEQAN3_TEST_CLONE_DIR "${PROJECT_BINARY_DIR}/vendor/googletest")
 # ----------------------------------------------------------------------------
 # Interface targets for the different test modules in seqan3.
 # ----------------------------------------------------------------------------
+if (WIN32)
+    set(AHLWAPI shlwapi.lib)
+endif()
 
 # seqan3::test exposes a base set of required flags, includes, definitions and
 # libraries which are in common for **all** seqan3 tests
@@ -62,17 +65,29 @@ add_library (seqan3::test INTERFACE IMPORTED)
 set_property (TARGET seqan3::test APPEND PROPERTY INTERFACE_COMPILE_OPTIONS "-pedantic"  "-Wall" "-Wextra" "-Werror")
 set_property (TARGET seqan3::test APPEND PROPERTY INTERFACE_LINK_LIBRARIES "seqan3::seqan3" "pthread")
 set_property (TARGET seqan3::test APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SEQAN3_CLONE_DIR}/test/include/")
-
+if (SEQAN3_FIND_DEBUG)
+    ###  Just for information:    ########################################
+    include(CMakePrintHelpers)
+    # see: https://cmake.org/cmake/help/v3.12/manual/cmake-properties.7.html#properties-on-targets
+    cmake_print_properties(TARGETS seqan3::test  PROPERTIES
+            INTERFACE_COMPILE_DEFINITIONS   INTERFACE_COMPILE_OPTIONS      INTERFACE_LINK_LIBRARIES
+            INTERFACE_INCLUDE_DIRECTORIES
+            ) # COMPILE_FLAGS INSTALL_NAME_DIR   LINK_FLAGS     VERSION
+endif()
 # seqan3::test::performance specifies required flags, includes and libraries
 # needed for performance test cases in seqan3/test/performance
 add_library (seqan3::test::performance INTERFACE IMPORTED)
-if (WIN32)
-    set(AHLWAPI shlwapi.lib)
-endif()
 set_property (TARGET seqan3::test::performance APPEND PROPERTY INTERFACE_LINK_LIBRARIES "seqan3::test" "gbenchmark" "${AHLWAPI}")
 set_property (TARGET seqan3::test::performance APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SEQAN3_BENCHMARK_CLONE_DIR}/include/")
 file(MAKE_DIRECTORY ${SEQAN3_BENCHMARK_CLONE_DIR}/include/) # see cmake bug https://gitlab.kitware.com/cmake/cmake/issues/15052
-
+if (SEQAN3_FIND_DEBUG)
+    ###  Just for information:    ########################################
+    include(CMakePrintHelpers)
+    cmake_print_properties(TARGETS seqan3::test::performance             PROPERTIES
+            INTERFACE_COMPILE_DEFINITIONS   INTERFACE_COMPILE_OPTIONS      INTERFACE_LINK_LIBRARIES
+            INTERFACE_INCLUDE_DIRECTORIES
+            ) # COMPILE_FLAGS INSTALL_NAME_DIR   LINK_FLAGS     VERSION
+endif()
 # seqan3::test::unit specifies required flags, includes and libraries
 # needed for unit test cases in seqan3/test/unit
 add_library (seqan3::test::unit INTERFACE IMPORTED)
@@ -83,7 +98,8 @@ file(MAKE_DIRECTORY ${SEQAN3_TEST_CLONE_DIR}/googletest/include/) # see cmake bu
 # seqan3::test::header specifies required flags, includes and libraries
 # needed for header test cases in seqan3/test/header
 add_library (seqan3::test::header INTERFACE IMPORTED)
-set_property (TARGET seqan3::test::header APPEND PROPERTY INTERFACE_LINK_LIBRARIES "seqan3::test::unit")
+set_property (TARGET seqan3::test::header APPEND PROPERTY INTERFACE_LINK_LIBRARIES "seqan3::test::unit" "seqan3::seqan3")
+set_property (TARGET seqan3::test::header APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SEQAN3_TEST_CLONE_DIR}/googletest/include/")
 
 # ----------------------------------------------------------------------------
 # Commonly shared options for external projects.

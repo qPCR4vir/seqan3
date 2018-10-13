@@ -55,7 +55,15 @@ macro (seqan3_snippet target_cpp snippet_full_path)
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${source_path}"
     )
-
+    if (SEQAN3_FIND_DEBUG)
+        ###  Just for information:    ########################################
+        include(CMakePrintHelpers)
+        # see: https://cmake.org/cmake/help/v3.12/manual/cmake-properties.7.html#properties-on-targets
+        cmake_print_properties(TARGETS ${target}  PROPERTIES
+                COMPILE_DEFINITIONS   COMPILE_OPTIONS    COMPILE_FLAGS  LINK_LIBRARIES
+                INCLUDE_DIRECTORIES   INSTALL_NAME_DIR   LINK_FLAGS     VERSION
+                )
+    endif()
     add_test (NAME "${test_path}/${target}" COMMAND ${target})
 
     unset (target_name)
