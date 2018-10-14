@@ -191,7 +191,7 @@ endif ()
 # ----------------------------------------------------------------------------
 
 # deactivate messages in check_*
-set (CMAKE_REQUIRED_QUIET       1)
+#set (CMAKE_REQUIRED_QUIET       1)
 # use global variables in Check* calls
 set (CMAKE_REQUIRED_INCLUDES    ${CMAKE_INCLUDE_PATH} ${SEQAN3_INCLUDE_DIRS})
 set (CMAKE_REQUIRED_FLAGS       ${CMAKE_CXX_FLAGS})
@@ -254,14 +254,14 @@ set (CXXSTD_TEST_SOURCE
     #error NOCXX17
     #endif
     int main() {}")
-
+unset(CXX17_BUILTIN CACHE)
 check_cxx_source_compiles ("${CXXSTD_TEST_SOURCE}" CXX17_BUILTIN)
 
 if (CXX17_BUILTIN)
     seqan3_config_print ("C++ Standard-17 support:    builtin")
 else ()
     set (CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS_ORIGINAL} -std=c++17")
-
+    unset(CXX17_FLAG CACHE)
     check_cxx_source_compiles ("${CXXSTD_TEST_SOURCE}" CXX17_FLAG)
 
     if (CXX17_FLAG)
@@ -276,26 +276,28 @@ endif ()
 # ----------------------------------------------------------------------------
 # Require C++ Concepts
 # ----------------------------------------------------------------------------
+cmake_print_variables(_SEQAN3_HAVE_RANGEV3 SEQAN3_INCLUDE_DIRS CMAKE_REQUIRED_INCLUDES CMAKE_REQUIRED_FLAGS CMAKE_REQUIRED_QUIET CMAKE_BINARY_DIR CMAKE_FILES_DIRECTORY)
 
 set (CMAKE_REQUIRED_FLAGS_ORIGINAL ${CMAKE_REQUIRED_FLAGS})
 
 set (CXXSTD_TEST_SOURCE
     "static_assert (__cpp_concepts >= 201507);
     int main() {}")
-
+unset(CONCEPTS_BUILTIN CACHE)
 check_cxx_source_compiles ("${CXXSTD_TEST_SOURCE}" CONCEPTS_BUILTIN)
 
 if (CONCEPTS_BUILTIN)
     seqan3_config_print ("C++ Concepts support:       builtin")
 else ()
-    set (CONCEPTS_FLAG "")
+    unset(CONCEPTS_FLAG CACHE)
 
-    foreach (_FLAG -std=c++20 -std=c++2a -fconcepts)
+    foreach (_FLAG -std=c++2a -std=c++20 -fconcepts)
+        unset(CONCEPTS_FLAG CACHE)
         set (CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS_ORIGINAL} ${_FLAG}")
+        message(STATUS "Looking for C++ Concepts support ${_FLAG}")
+        check_cxx_source_compiles ("${CXXSTD_TEST_SOURCE}" CONCEPTS_FLAG)
 
-        check_cxx_source_compiles ("${CXXSTD_TEST_SOURCE}" CONCEPTS_FLAG${_FLAG})
-
-        if (CONCEPTS_FLAG${_FLAG})
+        if (CONCEPTS_FLAG)  #${_FLAG}
             set (SEQAN3_CXX_FLAGS "${SEQAN3_CXX_FLAGS} ${_FLAG}")
             set (CONCEPTS_FLAG ${_FLAG})
             break ()
@@ -312,6 +314,9 @@ endif ()
 # ----------------------------------------------------------------------------
 # Require C++ Filesystem
 # ----------------------------------------------------------------------------
+cmake_print_variables(CMAKE_REQUIRED_LIBRARIES _SEQAN3_HAVE_RANGEV3 SEQAN3_INCLUDE_DIRS CMAKE_REQUIRED_INCLUDES CMAKE_REQUIRED_FLAGS CMAKE_REQUIRED_QUIET CMAKE_BINARY_DIR CMAKE_FILES_DIRECTORY)
+
+# Temporal workaround GCC 8.1 not implementing filesystem for windows - set next ON
 option(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM "Search: Is Boost filesystem available?" OFF)
 option(SEQAN3_CMAKE_BOOST_FILESYSTEM_FORCE "Force use of Boost filesystem if available (over STD)?" OFF)
 if (SEQAN3_CMAKE_BOOST_FILESYSTEM_FORCE)
@@ -321,12 +326,14 @@ if (SEQAN3_CMAKE_BOOST_FILESYSTEM_FORCE)
             "#error FORCE_BOOST_FS
              int main()  { }")
 elseif(SEQAN3_CMAKE_FIND_BOOST_FILESYSTEM)
-    find_package(Boost COMPONENTS filesystem)
+    find_package(Boost COMPONENTS filesystem)  # todo: test
 endif()
 
 # find the correct header
 if (NOT SEQAN3_CMAKE_BOOST_FILESYSTEM_FORCE)
+    unset(_SEQAN3_HAVE_FILESYSTEM CACHE)
     check_include_file_cxx (filesystem _SEQAN3_HAVE_FILESYSTEM)
+    unset(_SEQAN3_HAVE_EXP_FILESYSTEM CACHE)
     check_include_file_cxx (experimental/filesystem _SEQAN3_HAVE_EXP_FILESYSTEM)
 endif()
 
@@ -358,7 +365,7 @@ endif ()
 
 # check if library is required
 set (CMAKE_REQUIRED_LIBRARIES_ORIGINAL ${CMAKE_REQUIRED_LIBRARIES})
-
+unset(C++17FS_BUILTIN CACHE)
 check_cxx_source_compiles ("${CXXSTD_TEST_SOURCE}" C++17FS_BUILTIN)
 
 if (C++17FS_BUILTIN)
@@ -368,10 +375,10 @@ else ()
 
     foreach (_LIB stdc++fs)
         set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_ORIGINAL} ${_LIB})
+        unset(C17FSLB CACHE)
+        check_cxx_source_compiles ("${CXXSTD_TEST_SOURCE}" C17FSLB)
 
-        check_cxx_source_compiles ("${CXXSTD_TEST_SOURCE}" C++17FS_LIB-l${_LIB})
-
-        if (C++17FS_LIB-l${_LIB})
+        if (C17FSLB)
             set (SEQAN3_LIBRARIES ${SEQAN3_LIBRARIES} ${_LIB})
             set (C++17FS_LIB ${_LIB})
             break ()
@@ -397,7 +404,8 @@ endif ()
 # ----------------------------------------------------------------------------
 # Require Ranges and SDSL
 # ----------------------------------------------------------------------------
-
+cmake_print_variables(CMAKE_REQUIRED_LIBRARIES _SEQAN3_HAVE_RANGEV3 SEQAN3_INCLUDE_DIRS CMAKE_REQUIRED_INCLUDES CMAKE_REQUIRED_FLAGS CMAKE_REQUIRED_QUIET CMAKE_BINARY_DIR CMAKE_FILES_DIRECTORY)
+unset(_SEQAN3_HAVE_RANGEV3 CACHE)
 check_include_file_cxx (range/v3/version.hpp _SEQAN3_HAVE_RANGEV3)
 
 if (_SEQAN3_HAVE_RANGEV3)

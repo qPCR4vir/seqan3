@@ -78,16 +78,6 @@ macro (seqan3_header_test component header_base_path)
 
     add_executable (${target} ${PROJECT_BINARY_DIR}/header_test_src/empty.cpp)
     target_link_libraries (${target} seqan3::test::header)
-    if (SEQAN3_FIND_DEBUG)
-        ###  Just for information:    ########################################
-        include(CMakePrintHelpers)
-        # see: https://cmake.org/cmake/help/v3.12/manual/cmake-properties.7.html#properties-on-targets
-        message ("Results from ${CMAKE_CURRENT_LIST_DIR}")
-        cmake_print_properties(TARGETS ${target}  PROPERTIES
-                COMPILE_DEFINITIONS   COMPILE_OPTIONS    COMPILE_FLAGS  LINK_LIBRARIES
-                INCLUDE_DIRECTORIES   INSTALL_NAME_DIR   LINK_FLAGS     VERSION
-                )
-    endif()
     add_test (NAME "header/${target}" COMMAND ${target})
 
     foreach (header ${header_files})
@@ -112,7 +102,7 @@ TEST(Header, ${header_source_test_name}) {}")
             # is not possible for OBJECT libraries
             target_compile_options (${target_library} PRIVATE $<TARGET_PROPERTY:seqan3::test::header,INTERFACE_COMPILE_OPTIONS>)
             target_compile_definitions (${target_library} PRIVATE $<TARGET_PROPERTY:seqan3::test::header,INTERFACE_COMPILE_DEFINITIONS>)
-            target_include_directories (${target_library} PRIVATE $<TARGET_PROPERTY:seqan3::test::header,INTERFACE_INCLUDE_DIRECTORIES> "C:/MinGW/include")
+            target_include_directories (${target_library} PRIVATE $<TARGET_PROPERTY:seqan3::test::header,INTERFACE_INCLUDE_DIRECTORIES>)
             add_dependencies (${target_library} gtest)
 
             target_sources (${target} PRIVATE $<TARGET_OBJECTS:${target_library}>)
