@@ -40,6 +40,7 @@
 #pragma once
 
 #include <cassert>
+#include <seqan3/io/filesystem.hpp>
 #include <fstream>
 #include <string>
 #include <string_view>
@@ -56,7 +57,6 @@
 #include <seqan3/io/detail/out_file_iterator.hpp>
 #include <seqan3/io/detail/record.hpp>
 #include <seqan3/io/exception.hpp>
-#include <seqan3/io/filesystem.hpp>
 #include <seqan3/io/record.hpp>
 #include <seqan3/io/stream/concept.hpp>
 #include <seqan3/std/ranges>
@@ -331,7 +331,7 @@ public:
                           selected_field_ids const & SEQAN3_DOXYGEN_ONLY(fields_tag) = selected_field_ids{})
     {
         // open stream
-        stream.open(_file_name, std::ios_base::out | std::ios::binary);
+        stream.open(_file_name.generic_string(), std::ios_base::out | std::ios::binary);
         if (!stream.is_open())
             throw file_open_error{"Could not open file for writing."};
 

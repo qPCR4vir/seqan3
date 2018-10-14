@@ -62,7 +62,7 @@ namespace filesystem = std::experimental::filesystem;
 
 
 #else    // defined BOOST_FILESYSTEM_FORCE
-
+#define _GLIBCXX_FILESYSTEM 1
 #  include <chrono>
 
 // Workaround boost assert producing warnings (at least in 1.67):
