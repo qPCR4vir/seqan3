@@ -79,9 +79,6 @@ macro (seqan3_header_test component header_base_path)
     add_executable (${target} ${PROJECT_BINARY_DIR}/header_test_src/empty.cpp)
     target_link_libraries (${target} seqan3::test::header)
     if (SEQAN3_FIND_DEBUG)
-        ###  Just for information:    ########################################
-        include(CMakePrintHelpers)
-        # see: https://cmake.org/cmake/help/v3.12/manual/cmake-properties.7.html#properties-on-targets
         message ("Results from ${CMAKE_CURRENT_LIST_DIR}")
         cmake_print_properties(TARGETS ${target}  PROPERTIES
                 COMPILE_DEFINITIONS   COMPILE_OPTIONS    COMPILE_FLAGS  LINK_LIBRARIES

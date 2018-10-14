@@ -58,6 +58,7 @@ macro (seqan3_snippet target_cpp snippet_full_path)
     if (SEQAN3_FIND_DEBUG)
         ###  Just for information:    ########################################
         include(CMakePrintHelpers)
+            message("Full Path:" ${snippet_full_path})
         # see: https://cmake.org/cmake/help/v3.12/manual/cmake-properties.7.html#properties-on-targets
         cmake_print_properties(TARGETS ${target}  PROPERTIES
                 COMPILE_DEFINITIONS   COMPILE_OPTIONS    COMPILE_FLAGS  LINK_LIBRARIES

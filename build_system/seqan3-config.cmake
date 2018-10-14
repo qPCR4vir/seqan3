@@ -98,7 +98,6 @@
 # ============================================================================
 
 cmake_minimum_required (VERSION 3.2...3.12)
-include(CMakePrintHelpers)
 # ----------------------------------------------------------------------------
 # Set initial variables
 # ----------------------------------------------------------------------------
@@ -139,6 +138,7 @@ endif ()
 include (FindPackageMessage)
 include (CheckIncludeFileCXX)
 include (CheckCXXSourceCompiles)
+include (CMakePrintHelpers)
 
 # ----------------------------------------------------------------------------
 # Pretty printing and error handling
