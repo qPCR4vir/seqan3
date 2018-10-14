@@ -38,9 +38,24 @@
  */
 #pragma once
 
+
+// Temporal workaround GCC 8.1 not implementing filesystem for windows
 #ifdef BOOST_FILESYSTEM_FORCE
 #  include <chrono>
+
+// Workaround boost assert producing warnings (at least in 1.67):
+//   C:/MinGW/include/boost/mpl/assert.hpp:188:21: error: unnecessary parentheses in declaration of 'assert_arg' [-Werror=parentheses]
+//    failed ************ (Pred::************
+//                     ^
+//   C:/MinGW/include/boost/mpl/assert.hpp:193:21: error: unnecessary parentheses in declaration of 'assert_not_arg' [-Werror=parentheses]
+//    failed ************ (boost::mpl::not_<Pred>::************
+// todo: report to boost?? suppress error only for those two lines
+#pragma GCC diagnostic push
+#  pragma GCC diagnostic warning "-Wparentheses"
 #  include <boost/filesystem.hpp>
+#pragma GCC diagnostic pop
+
+
 
 #elif __has_include(<filesystem>)
 #include <filesystem>
