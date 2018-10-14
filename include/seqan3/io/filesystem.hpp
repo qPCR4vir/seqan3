@@ -40,7 +40,29 @@
 
 
 // Temporal workaround GCC 8.1 not implementing filesystem for windows
-#ifdef BOOST_FILESYSTEM_FORCE
+#ifndef BOOST_FILESYSTEM_FORCE
+
+
+#if __has_include(<filesystem>)
+#include <filesystem>
+#else
+#include <experimental/filesystem>
+#endif // __has_include(experimental/filesystem)
+
+#include <seqan3/core/platform.hpp>
+
+namespace seqan3
+{
+#if __has_include(<filesystem>)
+namespace filesystem = std::filesystem;
+#else
+namespace filesystem = std::experimental::filesystem;
+#endif // __has_include(experimental/filesystem)
+} // namespace seqan3
+
+
+#else    // defined BOOST_FILESYSTEM_FORCE
+
 #  include <chrono>
 
 // Workaround boost assert producing warnings (at least in 1.67):
@@ -54,20 +76,7 @@
 #  pragma GCC diagnostic warning "-Wparentheses"
 #  include <boost/filesystem.hpp>
 #pragma GCC diagnostic pop
-
-
-
-#elif __has_include(<filesystem>)
-#include <filesystem>
-#else
-#include <experimental/filesystem>
-#endif // __has_include(experimental/filesystem)
-
-#include <seqan3/core/platform.hpp>
-
-namespace seqan3
-{
-#ifdef BOOST_FILESYSTEM_FORCE
+namespace std {
     namespace filesystem {
         using namespace boost::filesystem;
         using file_time_type = std::chrono::time_point<std::chrono::system_clock>;
@@ -85,11 +94,13 @@ namespace seqan3
             unknown   = boost::filesystem::file_type::type_unknown
         };
     } // filesystem
+} // std
+namespace seqan3 {
+    namespace filesystem = std::filesystem;
+}
 
-#elif __has_include(<filesystem>)
-namespace filesystem = std::filesystem;
-#else
-namespace filesystem = std::experimental::filesystem;
-#endif // __has_include(experimental/filesystem)
-} // namespace seqan3
+#endif //   BOOST_FILESYSTEM_FORCE
+
+
+
 
