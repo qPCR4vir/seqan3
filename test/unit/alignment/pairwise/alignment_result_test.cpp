@@ -72,11 +72,6 @@ using align_result_test_types = ::testing::Types<type_list<uint32_t,
 
 TYPED_TEST_CASE(align_result_test, align_result_test_types);
 
-
-#pragma message "Compiled only bis here of a total of approximately 324 lines"
-#if 0 // debugging
-
-
 TYPED_TEST(align_result_test, constructor)
 {
     using res_t = typename TestFixture::res_t;
@@ -103,6 +98,11 @@ TYPED_TEST(align_result_test, tuple_size)
     using res_t = typename TestFixture::res_t;
     EXPECT_EQ(std::tuple_size_v<res_t>, 5);
 }
+
+
+#pragma message "Compiled only bis here of a total of approximately 324 lines"
+#if 0 // debugging
+
 
 TYPED_TEST(align_result_test, std_position_get)
 {

@@ -124,9 +124,6 @@ TYPED_TEST(fm_index_iterator_test, begin)
     EXPECT_EQ(it.count(), 7);
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TYPED_TEST(fm_index_iterator_test, extend_right_range)
 {
     typename TypeParam::index_type::text_type text{"ACGACG"_dna4};
@@ -167,6 +164,9 @@ TYPED_TEST(fm_index_iterator_test, extend_right_range)
 //     EXPECT_EQ(it.locate(), (std::vector<uint64_t>{2}));
 //     EXPECT_EQ(it.query_length(), 2);
 // }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TYPED_TEST(fm_index_iterator_test, extend_right_char)
 {

@@ -120,9 +120,6 @@ TEST(general, construct_by_filename)
     }
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TEST(general, construct_from_stream)
 {
     /* stream + format_tag */
@@ -139,6 +136,9 @@ TEST(general, construct_from_stream)
                                                             sequence_file_format_fasta{},
                                                             fields<field::SEQ, field::ID, field::QUAL>{}} ));
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TEST(general, default_template_args_and_deduction_guides)
 {

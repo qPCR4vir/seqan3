@@ -126,9 +126,6 @@ TEST_F(structure_file_input_class, construct_by_filename)
     }
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TEST_F(structure_file_input_class, construct_from_stream)
 {
     /* stream + format_tag */
@@ -170,6 +167,9 @@ TEST_F(structure_file_input_class, guided_filename_constructor)
     EXPECT_TRUE((std::is_same_v<typename t::valid_formats, comp2>));
     EXPECT_TRUE((std::is_same_v<typename t::stream_type, comp3>));
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TEST_F(structure_file_input_class, guided_filename_constructor_and_custom_fields)
 {

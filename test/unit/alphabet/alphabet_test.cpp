@@ -132,9 +132,6 @@ TYPED_TEST(alphabet, copy_constructor)
     EXPECT_EQ(t2, t3);
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TYPED_TEST(alphabet, move_constructor)
 {
     constexpr underlying_rank_t<TypeParam> rank = 1 % alphabet_size_v<TypeParam>;
@@ -185,6 +182,9 @@ TYPED_TEST(alphabet, swap)
     EXPECT_EQ(t2, t0);
     EXPECT_EQ(t1, t3);
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TYPED_TEST(alphabet, assign_char)
 {
