@@ -72,6 +72,11 @@ using align_result_test_types = ::testing::Types<type_list<uint32_t,
 
 TYPED_TEST_CASE(align_result_test, align_result_test_types);
 
+
+#pragma message "Compiled only bis here of a total of approximately 324 lines"
+#if 0 // debugging
+
+
 TYPED_TEST(align_result_test, constructor)
 {
     using res_t = typename TestFixture::res_t;
@@ -318,3 +323,5 @@ TYPED_TEST(align_result_test, trace)
                                     remove_cvref_t<decltype(std::ignore)>>));
     }
 }
+
+#endif // debugging

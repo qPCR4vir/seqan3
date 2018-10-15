@@ -103,6 +103,9 @@ TYPED_TEST(container_of_container, construction)
     EXPECT_TRUE(t7 == t8);
 }
 
+#pragma message "Compiled only bis here of a total of approximately 324 lines"
+#if 0 // debugging
+
 TYPED_TEST(container_of_container, assign)
 {
     TypeParam t1{"ACGT"_dna4, "ACGT"_dna4, "GAGGA"_dna4};
@@ -416,3 +419,6 @@ TYPED_TEST(container_of_container, serialisation)
     }
 }
 #endif // SEQAN3_WITH_CEREAL
+
+
+#endif // debugging
