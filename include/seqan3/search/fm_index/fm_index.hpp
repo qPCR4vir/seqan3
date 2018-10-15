@@ -327,7 +327,7 @@ public:
     bool load(filesystem::path const & path)
     {
         sdsl_index_type tmp;
-        if (sdsl::load_from_file(tmp, path))
+        if (sdsl::load_from_file(tmp, path.string()))
         {
             std::swap(this->index, tmp);
             return true;
