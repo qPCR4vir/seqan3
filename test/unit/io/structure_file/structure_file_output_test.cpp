@@ -152,7 +152,7 @@ TEST(structure_file_output_class, default_template_args_and_deduction_guides)
     /* guided filename constructor + custom fields */
     {
         test::tmp_filename filename{"structure_file_output_constructor.dbn"};
-        structure_file_out fout{filename.get_path(), fields<field::SEQ>{}};
+        structure_file_out fout{filename, fields<field::SEQ>{}};
 
         using t = decltype(fout);
         EXPECT_TRUE((std::is_same_v<typename t::selected_field_ids, fields<field::SEQ>>));
