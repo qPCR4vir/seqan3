@@ -183,9 +183,6 @@ TYPED_TEST(alphabet, swap)
     EXPECT_EQ(t1, t3);
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TYPED_TEST(alphabet, assign_char)
 {
     using char_t = underlying_char_t<TypeParam>;
@@ -215,6 +212,9 @@ TYPED_TEST(alphabet, to_char)
     // more elaborate tests are done in specific alphabets
 
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TYPED_TEST(alphabet, comparison_operators)
 {

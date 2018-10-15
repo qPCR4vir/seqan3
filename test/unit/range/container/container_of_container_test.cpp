@@ -200,9 +200,6 @@ TYPED_TEST(container_of_container, element_access)
 
 }
 
-#pragma message "Compiled only bis here of a total of approximately 324 lines"
-#if 0 // debugging
-
 TYPED_TEST(container_of_container, capacity)
 {
     TypeParam t0{};
@@ -303,6 +300,9 @@ TYPED_TEST(container_of_container, insert)
     t0.insert(t0.cbegin() + 1, "ACGT"_dna4);
     EXPECT_TRUE(t0 == t1);
 }
+
+#pragma message "Compiled only bis here of a total of approximately 324 lines"
+#if 0 // debugging
 
 TYPED_TEST(container_of_container, erase)
 {

@@ -84,9 +84,6 @@ TYPED_TEST(fm_index_test, ctr)
     EXPECT_EQ(fm0.size(), fm5.size());
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 
 TYPED_TEST(fm_index_test, swap)
 {
@@ -134,6 +131,9 @@ TYPED_TEST(fm_index_test, serialization)
 
     EXPECT_EQ(fm1.size(), 9);
 }
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
+
 
 TEST(fm_index_test, concepts)
 {
