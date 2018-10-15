@@ -119,9 +119,6 @@ TYPED_TEST(alphabet, to_rank)
     EXPECT_TRUE((std::is_same_v<decltype(to_rank(t0)), underlying_rank_t<TypeParam>>));
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TYPED_TEST(alphabet, copy_constructor)
 {
     // the module operation ensures that the result is within the valid rank range;
@@ -134,6 +131,9 @@ TYPED_TEST(alphabet, copy_constructor)
     EXPECT_EQ(t1, t2);
     EXPECT_EQ(t2, t3);
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TYPED_TEST(alphabet, move_constructor)
 {

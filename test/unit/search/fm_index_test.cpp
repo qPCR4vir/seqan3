@@ -55,10 +55,6 @@ using fm_index_types = ::testing::Types<fm_index<std::vector<dna4>>,
 
 TYPED_TEST_CASE(fm_index_test, fm_index_types);
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
-
 TYPED_TEST(fm_index_test, ctr)
 {
     typename TypeParam::text_type text(10); // initialized with smallest char
@@ -87,6 +83,10 @@ TYPED_TEST(fm_index_test, ctr)
     TypeParam fm5{text};
     EXPECT_EQ(fm0.size(), fm5.size());
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
+
 
 TYPED_TEST(fm_index_test, swap)
 {

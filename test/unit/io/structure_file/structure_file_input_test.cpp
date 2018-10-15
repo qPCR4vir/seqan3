@@ -94,9 +94,6 @@ TEST_F(structure_file_input_class, concepts)
     EXPECT_FALSE((std::ranges::InputRange<ct>));
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TEST_F(structure_file_input_class, construct_by_filename)
 {
     /* just the filename */
@@ -128,6 +125,9 @@ TEST_F(structure_file_input_class, construct_by_filename)
                                            std::ifstream>{filename.get_path(), fields<field::SEQ>{}}));
     }
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TEST_F(structure_file_input_class, construct_from_stream)
 {
