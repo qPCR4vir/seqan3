@@ -319,5 +319,3 @@ TYPED_TEST(align_result_test, trace)
                                     remove_cvref_t<decltype(std::ignore)>>));
     }
 }
-
-#endif
