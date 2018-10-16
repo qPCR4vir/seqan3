@@ -131,9 +131,6 @@ TYPED_TEST(fm_index_test, serialization)
 
     EXPECT_EQ(fm1.size(), 9);
 }
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 
 TEST(fm_index_test, concepts)
 {
@@ -146,4 +143,3 @@ TEST(fm_index_test, concepts)
     EXPECT_TRUE(bi_fm_index_traits_concept<bi_fm_index_default_traits>);
 }
 
-#endif

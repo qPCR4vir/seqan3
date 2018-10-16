@@ -207,9 +207,6 @@ TEST_F(structure_file_input_class, guided_stream_constructor_and_custom_fields)
     EXPECT_TRUE((std::is_same_v<typename t::stream_type,        std::istringstream>));
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TEST_F(structure_file_input_class, amino_acids_traits)
 {
     test::tmp_filename filename = create_file("> ID\nACEW\nHHHH\n");
@@ -240,6 +237,9 @@ TEST_F(structure_file_input_class, modified_traits)
     EXPECT_TRUE((std::is_same_v<typename t::valid_formats,      comp2>));
     EXPECT_TRUE((std::is_same_v<typename t::stream_type,        comp3>));
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 struct structure_file_input_read : public ::testing::Test
 {

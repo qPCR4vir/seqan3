@@ -301,9 +301,6 @@ TYPED_TEST(container_of_container, insert)
     EXPECT_TRUE(t0 == t1);
 }
 
-#pragma message "Compiled only bis here of a total of approximately 324 lines"
-#if 0 // debugging
-
 TYPED_TEST(container_of_container, erase)
 {
     TypeParam t1{"ACGT"_dna4, "ACGT"_dna4, "GAGGA"_dna4};
@@ -392,14 +389,14 @@ void do_serialisation(TypeParam const l)
     // Generate unique file name.
     test::tmp_filename filename{"container_cereal_test"};
     {
-        std::ofstream os{filename.get_path(), std::ios::binary};
+        std::ofstream os{filename.get_path().string(), std::ios::binary};
         out_archive_t oarchive{os};
         oarchive(l);
     }
 
     {
         TypeParam in_l{};
-        std::ifstream is{filename.get_path(), std::ios::binary};
+        std::ifstream is{filename.get_path().string(), std::ios::binary};
         in_archive_t iarchive{is};
         iarchive(in_l);
         EXPECT_TRUE(l == in_l);
@@ -421,4 +418,3 @@ TYPED_TEST(container_of_container, serialisation)
 #endif // SEQAN3_WITH_CEREAL
 
 
-#endif // debugging
