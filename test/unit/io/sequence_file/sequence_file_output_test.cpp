@@ -226,9 +226,6 @@ void assign_impl(source_t && source)
     EXPECT_EQ(fout.get_stream().str(), output_comp);
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 // ----------------------------------------------------------------------------
 // row
 // ----------------------------------------------------------------------------
@@ -272,6 +269,9 @@ TEST(row, push_back_record_const)
         file.push_back(r);
     });
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TEST(row, push_back_record_const_element)
 {
