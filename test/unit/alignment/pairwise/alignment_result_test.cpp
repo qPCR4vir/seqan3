@@ -179,9 +179,6 @@ TYPED_TEST(align_result_test, seqan3_pos_get)
         // EXPECT_TRUE((std::is_same_v<decltype(get<0>(std::move(tmp))), typename TestFixture::id_t const &&>));
     }
 }
-#pragma message "Compiled only bis here of a total of approximately 324 lines"
-#if 0 // debugging
-
 
 TYPED_TEST(align_result_test, seqan3_enum_get)
 {
@@ -250,14 +247,14 @@ TYPED_TEST(align_result_test, end_coordinate)
 
     {
         res_t tmp{1, 0, {10, 10}, {0, 0}, {seq, seq}};
-        EXPECT_EQ(tmp.end_coordinate(), (std::pair{10lu, 10lu}));
+        EXPECT_EQ(tmp.end_coordinate(), (std::pair{10llu, 10llu}));
         EXPECT_TRUE((std::is_same_v<decltype(tmp.end_coordinate()),
                                     std::pair<size_t, size_t> const &>));
     }
 
     {
         res_t tmp{1, 0, {10, 10}, {0, 0}, {seq, seq}};
-        EXPECT_TRUE(std::move(tmp).end_coordinate() == (std::pair{10lu, 10lu}));
+        EXPECT_TRUE(std::move(tmp).end_coordinate() == (std::pair{10llu, 10llu}));
         EXPECT_TRUE((std::is_same_v<decltype(std::move(tmp).end_coordinate()),
                                     std::pair<size_t, size_t> const &&>));
     }
@@ -277,14 +274,14 @@ TYPED_TEST(align_result_test, begin_coordinate)
 
     {
         res_t tmp{1, 0, {10, 10}, {0, 0}, {seq, seq}};
-        EXPECT_EQ(tmp.begin_coordinate(), (std::pair{0lu, 0lu}));
+        EXPECT_EQ(tmp.begin_coordinate(), (std::pair{0llu, 0llu}));
         EXPECT_TRUE((std::is_same_v<decltype(tmp.begin_coordinate()),
                                     std::pair<size_t, size_t> const &>));
     }
 
     {
         res_t tmp{1, 0, {10, 10}, {0, 0}, {seq, seq}};
-        EXPECT_TRUE(std::move(tmp).begin_coordinate() == (std::pair{0lu, 0lu}));
+        EXPECT_TRUE(std::move(tmp).begin_coordinate() == (std::pair{0llu, 0llu}));
         EXPECT_TRUE((std::is_same_v<decltype(std::move(tmp).begin_coordinate()),
                                     std::pair<size_t, size_t> const &&>));
     }
@@ -322,5 +319,3 @@ TYPED_TEST(align_result_test, trace)
                                     remove_cvref_t<decltype(std::ignore)>>));
     }
 }
-
-#endif
