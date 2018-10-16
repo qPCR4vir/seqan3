@@ -134,8 +134,15 @@ public:
                                            tmp_base_dir,
                                            std::make_error_code(std::errc::bad_file_descriptor));
 #else
-        tmp_base_dir /= filesystem::path{"seqan_test_%%%%%%%%"};
-        file_path = filesystem::unique_path(tmp_base_dir) / filesystem::path{f_name};
+        auto tmp_dir   = filesystem::unique_path(tmp_base_dir / "seqan_test_%%%%%%%%");
+        if (filesystem::create_directory(tmp_dir))
+        {
+            file_path = tmp_dir / filesystem::path{f_name};
+            return;
+        }
+        throw filesystem::filesystem_error("Could not create temporary directory!",
+                                           tmp_dir,
+                                           boost::system::errc::make_error_code(boost::system::errc::bad_file_descriptor));
 #endif
     }
 

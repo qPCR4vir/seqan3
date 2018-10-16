@@ -170,6 +170,7 @@ void do_serialisation(TypeParam const l)
 
     {
         std::ofstream os{filename.get_path().string(), std::ios::binary};
+        //std::cout << "\n ***** File created (tmp_filename): " << filename.get_path().string() << std::endl;
         out_archive_t oarchive{os};
         oarchive(l);
     }

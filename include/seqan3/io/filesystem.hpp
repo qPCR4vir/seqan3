@@ -94,6 +94,7 @@ namespace std {
             unknown   = boost::filesystem::file_type::type_unknown
         };
     } // filesystem
+      // std::string operator ()(const filesystem::path& p){return p.string();}
 } // std
 namespace seqan3 {
     namespace filesystem = std::filesystem;
