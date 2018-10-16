@@ -197,9 +197,6 @@ TEST(general, default_template_args_and_deduction_guides)
     }
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 // ----------------------------------------------------------------------------
 // *impl
 // ----------------------------------------------------------------------------
@@ -228,6 +225,9 @@ void assign_impl(source_t && source)
     fout.get_stream().flush();
     EXPECT_EQ(fout.get_stream().str(), output_comp);
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 // ----------------------------------------------------------------------------
 // row

@@ -213,9 +213,6 @@ TYPED_TEST(alphabet, to_char)
 
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TYPED_TEST(alphabet, comparison_operators)
 {
     TypeParam t0{};
@@ -402,6 +399,9 @@ TYPED_TEST(alphabet_constexpr, to_char)
     constexpr TypeParam t0{};
     [[maybe_unused]] constexpr underlying_char_t<TypeParam> c = to_char(t0);
 }
+
+#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
+#if 0 // debugging
 
 TYPED_TEST(alphabet_constexpr, comparison_operators)
 {
