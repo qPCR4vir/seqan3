@@ -215,9 +215,6 @@ TYPED_TEST(fm_index_iterator_test, extend_right_range_and_cycle)
     EXPECT_EQ(it.query_length(), 4);
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TYPED_TEST(fm_index_iterator_test, extend_right_char_and_cycle)
 {
     typename TypeParam::index_type::text_type text{"ACGAACGC"_dna4};
@@ -342,4 +339,3 @@ TEST(fm_index, concepts)
     EXPECT_TRUE(bi_fm_index_iterator_concept<bi_fm_index_iterator<bi_fm_index<std::vector<dna4>>>>);
 }
 
-#endif

@@ -140,10 +140,6 @@ TYPED_TEST(align_result_test, std_position_get)
     }
 }
 
-#pragma message "Compiled only bis here of a total of approximately 324 lines"
-#if 0 // debugging
-
-
 TYPED_TEST(align_result_test, seqan3_pos_get)
 {
     using res_t = typename TestFixture::res_t;
@@ -183,6 +179,9 @@ TYPED_TEST(align_result_test, seqan3_pos_get)
         // EXPECT_TRUE((std::is_same_v<decltype(get<0>(std::move(tmp))), typename TestFixture::id_t const &&>));
     }
 }
+#pragma message "Compiled only bis here of a total of approximately 324 lines"
+#if 0 // debugging
+
 
 TYPED_TEST(align_result_test, seqan3_enum_get)
 {
@@ -324,4 +323,4 @@ TYPED_TEST(align_result_test, trace)
     }
 }
 
-#endif // debugging
+#endif

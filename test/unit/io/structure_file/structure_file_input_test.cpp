@@ -238,9 +238,6 @@ TEST_F(structure_file_input_class, modified_traits)
     EXPECT_TRUE((std::is_same_v<typename t::stream_type,        comp3>));
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 struct structure_file_input_read : public ::testing::Test
 {
     size_t const num_records = 2ul;
@@ -469,4 +466,3 @@ TEST_F(structure_file_input_read, column_decomposed_temporary)
     }
 }
 
-#endif // debugging
