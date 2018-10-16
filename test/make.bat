@@ -1,4 +1,5 @@
 cd C:/Prog/ExtLib/cmake-seqan3-unit-build-debug
+rem C:/Prog/ExtLib/cmake-seqan3-unit-build-release
 set /p DUMMY=Hit ENTER to continue...
 
 C:\MinGW\bin\mingw32-make.exe gtest_project

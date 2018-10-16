@@ -270,9 +270,6 @@ TEST(row, push_back_record_const)
     });
 }
 
-#pragma message "Compiled only bis here of a total of aproximatelly 324 lines"
-#if 0 // debugging
-
 TEST(row, push_back_record_const_element)
 {
     row_wise_impl([&] (auto & file, size_t i)
@@ -408,5 +405,3 @@ TEST(columns, assign_tuple_of_columns)
 {
     assign_impl(std::tie(seqs, ids));
 }
-
-#endif // debugging
