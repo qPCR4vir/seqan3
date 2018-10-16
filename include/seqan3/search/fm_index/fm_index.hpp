@@ -349,7 +349,7 @@ public:
      */
     bool store(filesystem::path const & path) const
     {
-        return sdsl::store_to_file(index, path);
+        return sdsl::store_to_file(index, path.string());
     }
 
 };
