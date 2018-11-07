@@ -67,7 +67,7 @@ void do_test(adaptor_t const & adaptor, std::string const & vec)
     EXPECT_EQ("foo", v2);
 
     // combinability
-    auto v3 = vec | adaptor(3) | ranges::view::unique;
+    auto v3 = vec | adaptor(3) | adaptor(3) | ranges::view::unique;
     EXPECT_EQ("fo", std::string(v3));
     std::string v3b = vec | view::reverse | adaptor(3) | ranges::view::unique;
     EXPECT_EQ("rab", v3b);
@@ -160,7 +160,7 @@ TEST(view_take_exactly, underlying_is_shorter)
     EXPECT_EQ("foo", v);
 
     auto v2 = vec | view::single_pass_input | view::take_exactly(4);
-    EXPECT_EQ(ranges::size(v2), 4); // here be dragons
+    EXPECT_EQ(size(v2), 4); // here be dragons
 }
 
 // ============================================================================
