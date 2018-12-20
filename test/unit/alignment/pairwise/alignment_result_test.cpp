@@ -246,14 +246,16 @@ TYPED_TEST(align_result_test, end_coordinate)
 
     {
         res_t tmp{1, 0, {10, 10}, {0, 0}, {seq, seq}};
-        EXPECT_EQ(tmp.end_coordinate(), (std::pair{10lu, 10lu}));
+        using c_t = decltype(tmp.end_coordinate());
+        EXPECT_EQ(tmp.end_coordinate(), (c_t{std::pair{10, 10}}));
         EXPECT_TRUE((std::is_same_v<decltype(tmp.end_coordinate()),
                                     std::pair<size_t, size_t> const &>));
     }
 
     {
         res_t tmp{1, 0, {10, 10}, {0, 0}, {seq, seq}};
-        EXPECT_TRUE(std::move(tmp).end_coordinate() == (std::pair{10lu, 10lu}));
+        using c_t = decltype(tmp.end_coordinate());
+        EXPECT_TRUE(std::move(tmp).end_coordinate() == (c_t{std::pair{10, 10}}));
         EXPECT_TRUE((std::is_same_v<decltype(std::move(tmp).end_coordinate()),
                                     std::pair<size_t, size_t> const &&>));
     }
@@ -273,14 +275,15 @@ TYPED_TEST(align_result_test, begin_coordinate)
 
     {
         res_t tmp{1, 0, {10, 10}, {0, 0}, {seq, seq}};
-        EXPECT_EQ(tmp.begin_coordinate(), (std::pair{0lu, 0lu}));
+        using c_t = decltype(tmp.end_coordinate());
+        EXPECT_EQ(tmp.begin_coordinate(), (c_t{std::pair{0, 0}}));
         EXPECT_TRUE((std::is_same_v<decltype(tmp.begin_coordinate()),
                                     std::pair<size_t, size_t> const &>));
     }
 
     {
         res_t tmp{1, 0, {10, 10}, {0, 0}, {seq, seq}};
-        EXPECT_TRUE(std::move(tmp).begin_coordinate() == (std::pair{0lu, 0lu}));
+        EXPECT_TRUE(std::move(tmp).begin_coordinate() == (c_t{std::pair{0, 0}})));
         EXPECT_TRUE((std::is_same_v<decltype(std::move(tmp).begin_coordinate()),
                                     std::pair<size_t, size_t> const &&>));
     }
