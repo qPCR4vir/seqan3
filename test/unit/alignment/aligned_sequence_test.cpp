@@ -37,9 +37,11 @@
 #include <seqan3/alignment/aligned_sequence/aligned_sequence_concept.hpp>
 #include <seqan3/alphabet/all.hpp>
 #include <seqan3/io/alignment_file/detail.hpp>
+#include <seqan3/io/stream/debug_stream.hpp>
+#include <seqan3/range/view/persist.hpp>
+#include <seqan3/range/view/convert.hpp>
 
 using namespace seqan3;
-using namespace seqan3::literal;
 
 template <typename T>
 class aligned_sequence_test: public ::testing::Test { };
@@ -105,8 +107,8 @@ TYPED_TEST(aligned_sequence_test, erase_one_gap)
 
     auto it = erase_gap(aligned_seq, aligned_seq.begin() + 1);
 
-    typename TypeParam::value_type val = dna4::C;
-    val = dna4::C;
+    typename TypeParam::value_type val{'C'_dna4};
+    val = 'C'_dna4;
     EXPECT_EQ(*it, val);
     EXPECT_EQ(aligned_seq, aligned_seq_expected);
 
@@ -131,8 +133,8 @@ TYPED_TEST(aligned_sequence_test, erase_multiple_gaps)
 
     auto it = erase_gap(aligned_seq, aligned_seq.begin() + 1, aligned_seq.begin() + 3);
 
-    typename TypeParam::value_type val = dna4::C;
-    val = dna4::C;
+    typename TypeParam::value_type val{'C'_dna4};
+    val = 'C'_dna4;
     EXPECT_EQ(*it, val);
     EXPECT_EQ(aligned_seq, aligned_seq_expected);
 
@@ -154,7 +156,10 @@ TYPED_TEST(aligned_sequence_test, cigar_string)
         initialize_typed_test_container(ref,  "ACGTGAT--CTG");
         initialize_typed_test_container(read, "ACGT-CGTAGTG");
 
+//         [[maybe_unused]] char c = detail::compare_aligned_values(ref[0], read[0], false);
+
         std::string expected = "4M1D2M2I3M";
+//         std::string two = detail::get_cigar_string(std::tie(ref, read));
 
         EXPECT_EQ(expected, detail::get_cigar_string(std::make_pair(ref, read)));
 
@@ -201,4 +206,68 @@ TYPED_TEST(aligned_sequence_test, cigar_string)
         EXPECT_EQ(expected1, detail::get_cigar_string(std::make_pair(ref, read), 0, 0, true));
         EXPECT_EQ(expected2, detail::get_cigar_string(std::make_pair(ref, read), 5, 60, true));
     }
+}
+
+TEST(aligned_sequence_stream, multi_without_gaps)
+{
+    std::string const expected
+    {
+        "      0     .    :    .    :    .    :    .    :    .    :\n"
+        "        GCGGGTCACTGAGGGCTGGGATGAGGACGGCCACCACTTCGAGGAGTCCC\n"
+        "            | ||      |        |  |       |   |||   |    |\n"
+        "        CTACGGCAGAAGAAGACATCCGAAAAAGCTGACACCTCTCGCCTACAAGC\n"
+        "        ||||||||||||||||||||| || |||||||||||||||||||||||||\n"
+        "        CTACGGCAGAAGAAGACATCCCAAGAAGCTGACACCTCTCGCCTACAAGC\n"
+        "\n"
+        "     50     .    :    .    :    .    :    .    :    .    :\n"
+        "        TTCACTACGAGGGCAGGGCCGTGGACATCACCACGTCAGACAGGGACAAG\n"
+        "            |            || | | | | |     | |   | |     | \n"
+        "        AGTTCATACCTAATGTCGCGGAGAAGACCTTAGGGGCCAGCGGCAGATAC\n"
+        "        |||| |||||||||||||||||||||||||||||||||||||||||||||\n"
+        "        AGTTTATACCTAATGTCGCGGAGAAGACCTTAGGGGCCAGCGGCAGATAC\n"
+        "\n"
+        "    100     .    :    .    :    .    :    .    :\n"
+        "        AGCAAGTACGGCACCCTGTCCAGACTGGCGGTGGAAGCTG\n"
+        "               |    || |          |    |  |||   \n"
+        "        GAGGGCAAGATAACGCGCAATTCGGAGAGATTTAAAGAAC\n"
+        "        ||||||||||| ||||||||||||||||||||||||||||\n"
+        "        GAGGGCAAGATCACGCGCAATTCGGAGAGATTTAAAGAAC\n"
+    };
+
+    std::tuple<std::vector<gapped<dna4>>, std::vector<gapped<dna4>>, std::vector<gapped<dna4>>> const alignment
+    {
+        "GCGGGTCACTGAGGGCTGGGATGAGGACGGCCACCACTTCGAGGAGTCCCTTCACTACGAGGGCAGGGCCGTGGACATCACCACGTCAGACAGGGACAAGAGCAAGTA"
+        "CGGCACCCTGTCCAGACTGGCGGTGGAAGCTG"_dna4 | view::persist | view::convert<gapped<dna4>>,
+        "CTACGGCAGAAGAAGACATCCGAAAAAGCTGACACCTCTCGCCTACAAGCAGTTCATACCTAATGTCGCGGAGAAGACCTTAGGGGCCAGCGGCAGATACGAGGGCAA"
+        "GATAACGCGCAATTCGGAGAGATTTAAAGAAC"_dna4 | view::persist | view::convert<gapped<dna4>>,
+        "CTACGGCAGAAGAAGACATCCCAAGAAGCTGACACCTCTCGCCTACAAGCAGTTTATACCTAATGTCGCGGAGAAGACCTTAGGGGCCAGCGGCAGATACGAGGGCAA"
+        "GATCACGCGCAATTCGGAGAGATTTAAAGAAC"_dna4 | view::persist | view::convert<gapped<dna4>>
+    };
+
+    std::ostringstream oss;
+    debug_stream_type stream{oss};
+    stream << alignment;
+    EXPECT_EQ(expected, oss.str());
+}
+
+TEST(aligned_sequence_stream, pair_with_gaps)
+{
+    std::string const expected
+    {
+        "      0     . \n"
+        "        CUUC-G\n"
+        "        ||   |\n"
+        "        CU-NGG\n"
+    };
+
+    std::pair<std::vector<gapped<rna4>>, std::vector<gapped<rna5>>> const alignment
+    {
+        {'C'_rna4, 'U'_rna4, 'U'_rna4, 'C'_rna4, gap::GAP, 'G'_rna4},
+        {'C'_rna5, 'U'_rna5, gap::GAP, 'N'_rna5, 'G'_rna5, 'G'_rna5}
+    };
+
+    std::ostringstream oss;
+    debug_stream_type stream{oss};
+    stream << alignment;
+    EXPECT_EQ(expected, oss.str());
 }

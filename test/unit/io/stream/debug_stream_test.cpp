@@ -38,12 +38,12 @@
 #include <string>
 
 #include <seqan3/alphabet/nucleotide/all.hpp>
+#include <seqan3/io/filesystem.hpp>
 #include <seqan3/io/stream/debug_stream.hpp>
 #include <seqan3/range/container/bitcompressed_vector.hpp>
 #include <seqan3/range/container/concatenated_sequences.hpp>
 
 using namespace seqan3;
-using namespace seqan3::literal;
 
 TEST(debug_stream, basic)
 {
@@ -89,16 +89,16 @@ TEST(debug_stream, alphabet)
     std::ostringstream o;
     debug_stream_type my_stream{o};
 
-    my_stream << dna4::A;
+    my_stream << 'A'_dna4;
     o.flush();
     EXPECT_EQ(o.str(), "A");
 
-    dna5 d = dna5::N;
+    dna5 d = 'N'_dna5;
     my_stream << d;
     o.flush();
     EXPECT_EQ(o.str(), "AN");
 
-    dna5 const d2 = dna5::N;
+    dna5 const d2 = 'N'_dna5;
     my_stream << d2;
     o.flush();
     EXPECT_EQ(o.str(), "ANN");
@@ -140,4 +140,37 @@ TEST(debug_stream, std_endl)
     my_stream << "foo" << std::endl << "bar";
     o.flush();
     EXPECT_EQ(o.str(), "foo\nbar");
+}
+
+TEST(debug_stream, path)
+{
+    std::ostringstream o;
+    debug_stream_type my_stream{o};
+
+    filesystem::path p{"my/path/my_file.txt"};
+
+    my_stream << p;
+    o.flush();
+    EXPECT_EQ(o.str(), "\"my/path/my_file.txt\"");
+}
+
+TEST(debug_stream, tuple)
+{
+    std::ostringstream o;
+    debug_stream_type my_stream{o};
+
+    std::tuple<size_t, std::string> t0{32, "dummy"};
+    my_stream << t0;
+    o.flush();
+    EXPECT_EQ(o.str(), "(32,dummy)");
+
+    std::tuple<size_t> t1{32};
+    my_stream << t1;
+    o.flush();
+    EXPECT_EQ(o.str(), "(32,dummy)(32)");
+
+    std::tuple<size_t, std::pair<size_t, size_t>> t2{2, {3,2}};
+    my_stream << t2;
+    o.flush();
+    EXPECT_EQ(o.str(), "(32,dummy)(32)(2,(3,2))");
 }

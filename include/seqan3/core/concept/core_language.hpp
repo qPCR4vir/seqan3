@@ -46,6 +46,7 @@
 
 #include <seqan3/core/platform.hpp>
 #include <seqan3/std/concepts>
+#include <seqan3/std/ranges>
 
 namespace seqan3::detail
 {
@@ -78,6 +79,17 @@ concept weakly_ordered_by_members_with_concept = requires (lhs_t const & lhs, rh
     lhs.operator>=(rhs); std::Boolean<decltype(lhs.operator>=(rhs))>;
 };
 //!\endcond
+
+/*!\interface   seqan3::detail::convertible_to_by_member_concept <>
+ * \brief       Like seqan3::implicitly_convertible_to_concept, but only considers member operators of the source type.
+ */
+//!\cond
+template <typename source_t, typename target_t>
+concept convertible_to_by_member_concept = requires (source_t s)
+{
+    { s.operator target_t() } -> target_t;
+};
+//!\endcond
 //!\}
 
 } // seqan3::detail
@@ -108,19 +120,19 @@ concept weakly_ordered_with_concept = requires (std::remove_reference_t<t1> cons
 //!\endcond
 
 /*!\interface   seqan3::implicitly_convertible_to_concept <>
- * \brief       Resolves to `ranges::ImplicitlyConvertibleTo<type1, type2>()`.
+ * \brief       Resolves to `std::ranges::ImplicitlyConvertibleTo<type1, type2>()`.
  */
 //!\cond
 template <typename t, typename u>
-concept implicitly_convertible_to_concept = static_cast<bool>(ranges::ImplicitlyConvertibleTo<t, u>());
+concept implicitly_convertible_to_concept = std::is_convertible_v<t, u>;
 //!\endcond
 
 /*!\interface   seqan3::explicitly_convertible_to_concept <>
- * \brief       Resolves to `ranges::ExplicitlyConvertibleTo<type1, type2>()`.
+ * \brief       Resolves to `std::ranges::ExplicitlyConvertibleTo<type1, type2>()`.
  */
 //!\cond
 template <typename t, typename u>
-concept explicitly_convertible_to_concept = static_cast<bool>(ranges::ExplicitlyConvertibleTo<t, u>());
+concept explicitly_convertible_to_concept = requires (t vt) { { static_cast<u>(vt)}; };
 //!\endcond
 
 /*!\interface   seqan3::arithmetic_concept <>
@@ -140,6 +152,22 @@ concept arithmetic_concept = std::is_arithmetic_v<t>;
 //!\cond
 template <typename t>
 concept floating_point_concept = arithmetic_concept<t> && std::is_floating_point_v<t>;
+//!\endcond
+
+/*!\interface   seqan3::char_concept <>
+ * \extends     std::Integral
+ * \brief       This concept encompasses exactly the types `char`, `signed char`, `unsigned char`, `wchar_t`,
+ *              `char16_t` and `char32_t`.
+ */
+//!\cond
+
+template <typename t>
+concept char_concept = std::Integral<t> &&
+                       (std::Same<t, char> || std::Same<t, unsigned char> || std::Same<t, signed char> ||
+#ifdef __cpp_char8_t
+                        std::Same<t, char8_t> ||
+#endif
+                        std::Same<t, char16_t> || std::Same<t, char32_t> || std::Same<t, wchar_t>);
 //!\endcond
 
 /*!\interface   seqan3::trivially_destructible_concept <>
@@ -170,7 +198,7 @@ concept trivially_copyable_concept = std::Copyable<t> && std::is_trivially_copya
  */
 //!\cond
 template <typename t>
-concept trivial_concept = trivially_copyable_concept<t> && trivially_destructible_concept<t>;
+concept trivial_concept = trivially_copyable_concept<t> && trivially_destructible_concept<t> && std::is_trivial_v<t>;
 //!\endcond
 
 /*!\interface   seqan3::standard_layout_concept
@@ -180,6 +208,20 @@ concept trivial_concept = trivially_copyable_concept<t> && trivially_destructibl
 //!\cond
 template <typename t>
 concept standard_layout_concept = std::is_standard_layout_v<t>;
+//!\endcond
+
+/*!\interface   seqan3::weakly_assignable_concept
+ * \brief       Resolves to std::is_assignable_v<t>.
+ * \sa          https://en.cppreference.com/w/cpp/types/is_assignable
+ *
+ * \details
+ *
+ * Note that this requires less than std::Assignable, it simply tests if the expression
+ * `std::declval<T>() = std::declval<U>()` is well-formed.
+ */
+//!\cond
+template <typename t, typename u>
+concept weakly_assignable_concept = std::is_assignable_v<t, u>;
 //!\endcond
 
 }  // namespace seqan3

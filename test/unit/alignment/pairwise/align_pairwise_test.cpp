@@ -52,7 +52,6 @@ using namespace seqan3;
 
 TEST(align_pairwise, single_rng_lvalue)
 {
-    using namespace seqan3::literal;
 
     auto seq1 = "ACGTGATG"_dna4;
     auto seq2 = "AGTGATACT"_dna4;
@@ -60,8 +59,7 @@ TEST(align_pairwise, single_rng_lvalue)
     auto p = std::make_pair(seq1, seq2);
 
     {  // the score
-        detail::configuration cfg = align_cfg::edit |
-                                    align_cfg::output<align_result_key::score>;
+        configuration cfg = align_cfg::edit | align_cfg::result{align_cfg::with_score};
         for (auto && res : align_pairwise(p, cfg))
         {
             EXPECT_EQ(res.score(), -4);
@@ -69,8 +67,7 @@ TEST(align_pairwise, single_rng_lvalue)
     }
 
     {  // the trace
-        detail::configuration cfg = align_cfg::edit |
-                                    align_cfg::output<align_result_key::trace>;
+        configuration cfg = align_cfg::edit | align_cfg::result{align_cfg::with_trace};
         for (auto && res : align_pairwise(p, cfg))
         {
             EXPECT_EQ(res.score(), -4);
@@ -85,7 +82,6 @@ TEST(align_pairwise, single_rng_lvalue)
 
 TEST(align_pairwise, single_view_lvalue)
 {
-    using namespace seqan3::literal;
 
     auto seq1 = "ACGTGATG"_dna4;
     auto seq2 = "AGTGATACT"_dna4;
@@ -94,16 +90,14 @@ TEST(align_pairwise, single_view_lvalue)
     auto v = ranges::view::single(std::tie(seq1, seq2)) | ranges::view::bounded;
 
     {  // the score
-        detail::configuration cfg = align_cfg::edit |
-                                    align_cfg::output<align_result_key::score>;
+        configuration cfg = align_cfg::edit | align_cfg::result{align_cfg::with_score};
         for (auto && res : align_pairwise(v, cfg))
         {
             EXPECT_EQ(res.score(), -4);
         }
     }
     {  // the trace
-        detail::configuration cfg = align_cfg::edit |
-                                    align_cfg::output<align_result_key::trace>;
+        configuration cfg = align_cfg::edit | align_cfg::result{align_cfg::with_trace};
         for (auto && res : align_pairwise(v, cfg))
         {
             EXPECT_EQ(res.score(), -4);
@@ -116,7 +110,6 @@ TEST(align_pairwise, single_view_lvalue)
 
 TEST(align_pairwise, multiple_rng_lvalue)
 {
-    using namespace seqan3::literal;
 
     auto seq1 = "ACGTGATG"_dna4;
     auto seq2 = "AGTGATACT"_dna4;
@@ -124,7 +117,7 @@ TEST(align_pairwise, multiple_rng_lvalue)
     auto p = std::make_pair(seq1, seq2);
     std::vector<decltype(p)> vec{10, p};
 
-    detail::configuration cfg = align_cfg::edit | align_cfg::output<align_result_key::trace>;
+    configuration cfg = align_cfg::edit | align_cfg::result{align_cfg::with_trace};
     for (auto && res : align_pairwise(vec, cfg))
     {
         EXPECT_EQ(res.score(), -4);

@@ -32,11 +32,6 @@
 //
 // ==========================================================================
 
-/*!\file
- * \author Jörg Winkler <j.winkler AT fu-berlin.de>
- * \brief Tests for writing sequence files with structure information.
- */
-
 #include <iterator>
 #include <fstream>
 #include <sstream>
@@ -51,6 +46,7 @@
 
 #include <seqan3/io/structure_file/output.hpp>
 #include <seqan3/io/structure_file/input.hpp>
+#include <seqan3/range/shortcuts.hpp>
 #include <seqan3/range/view/convert.hpp>
 #include <seqan3/range/view/to_char.hpp>
 #include <seqan3/std/iterator>
@@ -58,7 +54,6 @@
 #include <seqan3/test/tmp_filename.hpp>
 
 using namespace seqan3;
-using namespace seqan3::literal;
 
 TEST(general, concepts)
 {
@@ -240,7 +235,7 @@ TEST_F(structure_file_output_row, assign_to_iterator)
     {
         record<type_list<rna5_vector, std::string, std::vector<wuss51>>,
                fields<field::SEQ, field::ID, field::STRUCTURE>> r{seqs[i], ids[i], structures[i]};
-        ranges::begin(file) = r;
+        begin(file) = r;
     });
 }
 

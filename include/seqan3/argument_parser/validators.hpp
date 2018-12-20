@@ -44,8 +44,11 @@
 
 #include <seqan3/argument_parser/auxiliary.hpp>
 #include <seqan3/argument_parser/exceptions.hpp>
-#include <seqan3/std/concepts>
+#include <seqan3/core/concept/core_language.hpp>
+#include <seqan3/core/metafunction/basic.hpp>
+#include <seqan3/io/filesystem.hpp>
 #include <seqan3/range/container/concept.hpp>
+#include <seqan3/std/concepts>
 #include <seqan3/std/view/view_all.hpp>
 
 namespace seqan3
@@ -60,27 +63,62 @@ namespace seqan3
  * The requirements for this concept are given as related functions and metafunctions.
  * Types that satisfy this concept are shown as "implementing this interface".
  */
+/*!\name Requirements for seqan3::validator_concept
+ * \brief You can expect these (meta-)functions on all types that implement seqan3::validator_concept.
+ * \{
+ */
+/*!\typedef     using value_type
+ * \brief       The type of value on which the validator is called on.
+ * \relates     seqan3::validator_concept
+ *
+ * \details
+ * \attention This is a concept requirement, not an actual typedef (however types satisfying this concept
+ * will provide an implementation).
+ */
+/*!\fn              void operator()(value_type const & cmp) const
+ * \brief           Validates the value 'cmp' and throws a seqan3::validation_error on failure.
+ * \tparam          value_type The type of the value to be validated.
+ * \param[in,out]   cmp The value to be validated.
+ * \relates         seqan3::validator_concept
+ * \throws          seqan3::validation_error if value 'cmp' does not pass validation.
+ *
+ * \details
+ * \attention This is a concept requirement, not an actual function (however types satisfying this concept
+ * will provide an implementation).
+ */
+/*!\fn              std::string get_help_page_message() const
+ * \brief           Returns a message that can be appended to the (positional) options help page info.
+ * \relates         seqan3::validator_concept
+ * \returns         A string that contains information on the performed validation.
+ *
+ * \details
+ * \attention This is a concept requirement, not an actual function (however types satisfying this concept
+ * will provide an implementation).
+ */
+//!\}
 //!\cond
 template <typename validator_type>
-concept validator_concept = std::Invocable<validator_type, typename validator_type::value_type> &&
-                                 requires(validator_type validator,
-                                          typename validator_type::value_type value)
+concept validator_concept = std::Copyable<remove_cvref_t<validator_type>> &&
+                            requires(validator_type validator,
+                                     typename std::remove_reference_t<validator_type>::value_type value)
 {
-    typename validator_type::value_type;
+    typename std::remove_reference_t<validator_type>::value_type;
 
+    { validator(value) } -> void;
     { validator.get_help_page_message() } -> std::string;
 };
 //!\endcond
 
 //!\cond
 template <typename option_value_type>
-class integral_range_validator;
+class arithmetic_range_validator;
 //!\endcond
 
 /*!\brief A validator that checks whether a number is inside a given range.
  * \ingroup argument_parser
+ * \implements seqan3::validator_concept
  *
- * \tparam option_value_type Must be a (container of) integral type(s).
+ * \tparam option_value_type Must be a (container of) arithmetic type(s).
  *
  * \details
  *
@@ -90,8 +128,8 @@ class integral_range_validator;
  *
  * \snippet test/snippet/argument_parser/validators_1.cpp usage
  */
-template <std::Integral option_value_type>
-class integral_range_validator<option_value_type>
+template <arithmetic_concept option_value_type>
+class arithmetic_range_validator<option_value_type>
 {
 public:
     //!\brief The type of value that this validator invoked upon.
@@ -101,7 +139,7 @@ public:
      * \param[in] min_ Minimum set for the range to test.
      * \param[in] max_ Maximum set for the range to test.
      */
-    integral_range_validator(value_type const min_, value_type const max_) :
+    arithmetic_range_validator(value_type const min_, value_type const max_) :
         min{min_}, max{max_}
     {}
 
@@ -132,8 +170,8 @@ private:
 
 //!\cond
 template <container_concept option_value_type>
-    requires std::Integral<typename option_value_type::value_type>
-class integral_range_validator<option_value_type>
+    requires arithmetic_concept<typename option_value_type::value_type>
+class arithmetic_range_validator<option_value_type>
 {
 public:
     //!\brief Type of values that are tested by validator (container)
@@ -145,8 +183,8 @@ public:
      * \param[in] min_ Minimum set for the range to test.
      * \param[in] max_ Maximum set for the range to test.
      */
-    integral_range_validator(inner_value_type const min_,
-                             inner_value_type const max_) :
+    arithmetic_range_validator(inner_value_type const min_,
+                               inner_value_type const max_) :
         min{min_}, max{max_}
     {}
 
@@ -181,6 +219,7 @@ private:
 
 /*!\brief A validator that checks whether a value is inside a list of valid values.
  * \ingroup argument_parser
+ * \implements seqan3::validator_concept
  *
  * \details
  *
@@ -235,6 +274,7 @@ private:
 
 /*!\brief A validator that checks if each value in a container appears in a list of valid values.
  * \ingroup argument_parser
+ * \implements seqan3::validator_concept
  * \extends seqan3::value_list_validator
  *
  * \tparam option_value_type The container type. Must satisfy the seqan3::container_concept.
@@ -293,6 +333,7 @@ private:
 
 /*!\brief A validator that checks if a filenames has one of the valid extensions.
  * \ingroup argument_parser
+ * \implements seqan3::validator_concept
  *
  * \details
  *
@@ -302,7 +343,7 @@ private:
  *
  * \snippet test/snippet/argument_parser/validators_3.cpp usage
  */
-class file_ext_validator // TODO AFTER INITIAL MERGE: Check if file exists, also allow filepath
+class file_ext_validator
 {
 public:
     //!\brief Type of values that are tested by validator
@@ -322,14 +363,14 @@ public:
         extensions{v}
     {}
 
-    /*!\brief Tests whether cmp lies inside extensions.
-     * \param cmp The input value to check.
+    /*!\brief Tests whether the filepath \p path ends with a valid extension.
+     * \param path The input value to check.
      * \throws parser_invalid_argument
      */
-    void operator()(std::string const & cmp) const
+    void operator()(filesystem::path const & path) const
     {
-        std::string ext{cmp.substr(cmp.find_last_of('.') + 1)};
-
+        std::string ext{path.extension().string()};
+        ext = ext.substr(std::min(1, static_cast<int>(ext.size()))); // drop '.' if extension is non-empty
         if (!(std::find(extensions.begin(), extensions.end(), ext) != extensions.end()))
             throw parser_invalid_argument(detail::to_string("Extension ", ext, " is not one of ",
                                                             view::all(extensions), "."));
@@ -352,6 +393,45 @@ private:
     std::vector<std::string> extensions;
 };
 
+/*!\brief A validator that checks if a file exists.
+ * \ingroup argument_parser
+ *
+ * \details
+ *
+ * The struct then acts as a functor that throws a seqan3::parser_invalid_argument
+ * exception whenever a given filename (string) does not exist.
+ *
+ * \snippet test/snippet/argument_parser/validators_file_existance.cpp usage
+ */
+class file_existance_validator
+{
+public:
+    //!\brief Type of values that are tested by validator
+    using value_type = filesystem::path;
+
+    /*!\brief Tests whether path exists.
+     * \param path The input value to check.
+     * \throws parser_invalid_argument
+     */
+    void operator()(filesystem::path const & path) const
+    {
+        if (!(filesystem::exists(path)))
+            throw parser_invalid_argument(detail::to_string("File ", path, " does not exist."));
+    }
+
+    //!\brief Tests whether every filename in list v exists.
+    void operator()(std::vector<filesystem::path> const & v) const
+    {
+         std::for_each(v.begin(), v.end(), [&] (auto cmp) { (*this)(cmp); });
+    }
+
+    //!\brief Returns a message that can be appended to the (positional) options help page info.
+    std::string get_help_page_message() const
+    {
+        return detail::to_string("The file is checked for existence.");
+    }
+};
+
 //!\cond
 template <typename option_value_type>
 class regex_validator;
@@ -359,6 +439,7 @@ class regex_validator;
 
 /*!\brief A validator that checks if a matches a regular expression pattern.
  * \ingroup argument_parser
+ * \implements seqan3::validator_concept
  *
  * \details
  *
@@ -410,6 +491,7 @@ private:
 
 /*!\brief A validator that checks if each value in a container satisfies a regex expression.
  * \ingroup argument_parser
+ * \implements seqan3::validator_concept
  * \extends seqan3::regex_validator
  */
 template <>
@@ -460,6 +542,7 @@ namespace detail
 
 /*!\brief Validator that always returns true.
  * \ingroup argument_parser
+ * \implements seqan3::validator_concept
  *
  * \details
  *
@@ -472,11 +555,9 @@ struct default_validator
     //!\brief Type of values that are tested by validator
     using value_type = option_value_type;
 
-    //!\brief Value cmp always passes validation.
-    bool operator()(option_value_type const & /*cmp*/) const noexcept
-    {
-        return true;
-    }
+    //!\brief Value cmp always passes validation because the operator never throws.
+    void operator()(option_value_type const & /*cmp*/) const noexcept
+    {}
 
     //!\brief Since no validation is happening the help message is empty.
     std::string get_help_page_message() const
@@ -485,6 +566,113 @@ struct default_validator
     }
 };
 
+/*!\brief A helper struct to chain validators recursively via the pipe operator.
+ *\ingroup argument_parser
+ *\implements seqan3::validator_concept
+ *
+ *\details
+ *
+ * Note that both validators must operate on the same value_type in order to
+ * avoid unexpected behaviour and ensure that the seqan3::argument_parser::add_option
+ * call is well-formed. (add_option(val, ...., validator) requires
+ * that val is of same type as validator::value_type).
+ */
+template <validator_concept validator1_type, validator_concept validator2_type>
+//!\cond
+    requires std::Same<typename validator1_type::value_type, typename validator2_type::value_type>
+//!\endcond
+class validator_chain_adaptor
+{
+public:
+    //!\brief The underlying type in both validators.
+    using value_type = typename validator1_type::value_type;
+
+    /*!\name Constructors, destructor and assignment
+     * \{
+     */
+    //!\brief The default constructor is explicitly deleted.
+    validator_chain_adaptor() = delete;
+    validator_chain_adaptor(validator_chain_adaptor const & pf) = default;
+    validator_chain_adaptor & operator=(validator_chain_adaptor const & pf) = default;
+    validator_chain_adaptor(validator_chain_adaptor &&) = default;
+    validator_chain_adaptor & operator=(validator_chain_adaptor &&) = default;
+
+    /*!\brief Constructing from two validators.
+     * \param[in] vali1_ Some validator to be chained to vali2_.
+     * \param[in] vali2_ Another validator to be chained to vali1_.
+     */
+    validator_chain_adaptor(validator1_type vali1_, validator2_type vali2_) :
+        vali1{std::move(vali1_)}, vali2{std::move(vali2_)}
+    {}
+
+    //!\brief The destructor.
+    ~validator_chain_adaptor() = default;
+    //!\}
+
+    /*!\brief Calls the operator() of each validator on the value cmp.
+     * \param[in] cmp The value to validate.
+     *
+     * This function delegates to the validation of both of the chained validators
+     * by calling their operator() one after the other. The behaviour depends on
+     * the chained validators which may throw on input error.
+     */
+    void operator()(value_type const & cmp) const
+    {
+        vali1(cmp);
+        vali2(cmp);
+    }
+
+    //!\brief Returns a message that can be appended to the (positional) options help page info.
+    std::string get_help_page_message() const
+    {
+        return detail::to_string(vali1.get_help_page_message(), " ", vali2.get_help_page_message());
+    }
+
+private:
+    //!\brief The first validator in the chain.
+    validator1_type vali1;
+    //!\brief The second validator in the chain.
+    validator2_type vali2;
+};
+
 } // namespace detail
+
+/*!\brief Enables the chaining of validators.
+ *!\ingroup argument_parser
+ * \tparam validator1_type The type of the fist validator;
+ *                         Must satisfy the seqan3::validator_concept and the
+ *                         same value_type as the second validator type.
+ * \tparam validator2_type The type of the second validator;
+ *                         Must satisfy the seqan3::validator_concept and the
+ *                         same value_type as the fist validator type.
+ * \param[in] vali1 The first validator to chain.
+ * \param[in] vali2 The second validator to chain.
+ * \returns A new validator that tests a value for both vali1 and vali2.
+ *
+ * \details
+ *
+ * The pipe operator is the AND operation for two validators, which means that a
+ * value must pass both validators in order to be accepted by the new validator.
+ *
+ * For example you may want a file name that only accepts absolute paths but
+ * also must have one out of some given file extensions.
+ * For this purpose you can chain a seqan3::regex_validator to a
+ * seqan3::file_ext_validator like this:
+ *
+ * \include test/snippet/argument_parser/validators_chaining.cpp
+ *
+ * You can chain as many validators as you want which will be evaluated one after
+ * the other from left to right (first to last).
+ */
+template <validator_concept validator1_type, validator_concept validator2_type>
+//!\cond
+    requires std::Same<typename std::remove_reference_t<validator1_type>::value_type,
+                       typename std::remove_reference_t<validator2_type>::value_type>
+//!\endcond
+auto operator|(validator1_type && vali1, validator2_type && vali2)
+{
+    return detail::validator_chain_adaptor{std::forward<validator1_type>(vali1),
+                                           std::forward<validator2_type>(vali2)};
+}
 
 } // namespace seqan3

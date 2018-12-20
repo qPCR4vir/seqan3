@@ -1,4 +1,5 @@
 #include <seqan3/alphabet/aminoacid/aa27.hpp>
+#include <seqan3/io/stream/debug_stream.hpp>
 
 using namespace seqan3;
 
@@ -15,7 +16,7 @@ my_letter.assign_char('C'); // <- this does!
 
 my_letter.assign_char('?'); // all unknown characters are converted to aa27::X implicitly
 if (my_letter.to_char() == 'X')
-    std::cout << "yeah\n"; // "yeah";
+    debug_stream << "yeah\n"; // "yeah";
 //! [construction]
 }
 
@@ -26,7 +27,6 @@ if (my_letter.to_char() == 'X')
 // aa27_vector bar = "ABFUYR";
 
 // but these do:
-using namespace seqan3::literal;
 aa27_vector foo{"ABFUYR"_aa27};
 aa27_vector bar = "ABFUYR"_aa27;
 auto bax = "ABFUYR"_aa27;

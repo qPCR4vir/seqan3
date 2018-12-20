@@ -39,6 +39,7 @@
 
 #pragma once
 
+#include <seqan3/range/shortcuts.hpp>
 #include <seqan3/std/ranges>
 
 namespace seqan3::detail
@@ -52,8 +53,8 @@ namespace seqan3::detail
 template <std::ranges::InputRange rng_t>
 constexpr void consume(rng_t && rng)
 {
-    auto it = ranges::begin(rng);
-    auto it_end = ranges::end(rng);
+    auto it = begin(rng);
+    auto it_end = end(rng);
     while (it != it_end)
         ++it;
 }

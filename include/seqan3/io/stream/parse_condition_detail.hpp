@@ -172,7 +172,6 @@ concept parse_condition_concept = requires
 // ----------------------------------------------------------------------------
 
 /*!\brief Returns a printable value for the given character `c`.
- * \tparam char_type The type of the character.
  * \param[in] c The character to be represented as printable string.
  * \return    a std::string containing a printable version of the given character `c`.
  *
@@ -193,8 +192,7 @@ concept parse_condition_concept = requires
  *
  * Thread-safe.
  */
-template <typename char_type>
-inline std::string make_printable(char_type const c)
+inline std::string make_printable(char const c)
 {
     switch (c)
     {
@@ -291,7 +289,7 @@ public:
         requires sizeof(value_t) != 1
     {
         return (static_cast<std::make_unsigned_t<value_t>>(val) < 256) ? operator()(static_cast<uint8_t>(val)) :
-               (val == EOF)                                            ? derived_t::data[256]                  : false;
+               (static_cast<decltype(EOF)>(val) == EOF)                ? derived_t::data[256]                  : false;
     }
     //!\}
 
@@ -300,7 +298,6 @@ public:
      */
     //!\brief Returns the message representing this condition as std::string.
     std::string message() const
-        requires parse_condition_concept<derived_t>
     {
         return derived_t::msg.string();
     }

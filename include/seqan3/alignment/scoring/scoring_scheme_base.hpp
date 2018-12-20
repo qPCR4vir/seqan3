@@ -45,6 +45,8 @@
 #include <seqan3/alphabet/concept.hpp>
 #include <seqan3/core/concept/cereal.hpp>
 #include <seqan3/core/detail/strong_type.hpp>
+#include <seqan3/range/shortcuts.hpp>
+#include <seqan3/std/ranges>
 
 #if SEQAN3_WITH_CEREAL
 #include <cereal/types/array.hpp>
@@ -123,7 +125,7 @@ public:
     //!\brief Type of the score values.
     using score_type = score_t;
     //!\brief Size type that can hold the dimension of the matrix (i.e. size of the alphabet).
-    using matrix_size_type = uint8_t;
+    using matrix_size_type = std::remove_const_t<decltype(alphabet_size_v<alphabet_t>)>;
     //!\}
 
     //!\brief Size of the matrix dimensions (i.e. size of the alphabet).
@@ -214,7 +216,7 @@ public:
      */
     constexpr void set_custom_matrix(matrix_type const & _matrix) noexcept
     {
-        ranges::copy(_matrix, ranges::begin(matrix));
+        std::ranges::copy(_matrix, begin(matrix));
     }
     //!\}
 

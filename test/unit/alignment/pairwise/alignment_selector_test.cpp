@@ -42,7 +42,7 @@
 #include <meta/meta.hpp>
 
 #include <seqan3/alignment/configuration/align_config_edit.hpp>
-#include <seqan3/alignment/configuration/align_config_output.hpp>
+#include <seqan3/alignment/configuration/align_config_result.hpp>
 #include <seqan3/alignment/pairwise/alignment_selector.hpp>
 #include <seqan3/alphabet/gap/gapped.hpp>
 #include <seqan3/alphabet/nucleotide/all.hpp>
@@ -61,28 +61,28 @@ TEST(alignment_selector, determine_result_type)
         auto cfg = align_cfg::edit;
         using _t = typename detail::determine_result_type<seq1_t, seq2_t, decltype(cfg)>::type;
 
-        EXPECT_EQ(std::tuple_size_v<_t>, 2);
+        EXPECT_EQ(std::tuple_size_v<_t>, 2u);
         EXPECT_TRUE((std::is_same_v<std::tuple_element_t<0, _t>, uint32_t>));
         EXPECT_TRUE((std::is_same_v<std::tuple_element_t<1, _t>, int32_t>));
     }
 
     { // test case II
-        auto cfg = align_cfg::edit | align_cfg::output<align_result_key::score>;
+        auto cfg = align_cfg::edit | align_cfg::result{align_cfg::with_score};
         using _t = typename detail::determine_result_type<seq1_t, seq2_t, decltype(cfg)>::type;
 
-        EXPECT_EQ(std::tuple_size_v<_t>, 2);
+        EXPECT_EQ(std::tuple_size_v<_t>, 2u);
         EXPECT_TRUE((std::is_same_v<std::tuple_element_t<0, _t>, uint32_t>));
         EXPECT_TRUE((std::is_same_v<std::tuple_element_t<1, _t>, int32_t>));
     }
 
     { // test case III
-        auto cfg = align_cfg::edit | align_cfg::output<align_result_key::trace>;
+        auto cfg = align_cfg::edit | align_cfg::result{align_cfg::with_trace};
         using _t = typename detail::determine_result_type<seq1_t, seq2_t, decltype(cfg)>::type;
 
         using gapped_seq1_t = std::vector<gapped<dna4>>;
         using gapped_seq2_t = std::vector<gapped<dna4>>;
 
-        EXPECT_EQ(std::tuple_size_v<_t>, 5);
+        EXPECT_EQ(std::tuple_size_v<_t>, 5u);
         EXPECT_TRUE((std::is_same_v<std::tuple_element_t<0, _t>, uint32_t>));
         EXPECT_TRUE((std::is_same_v<std::tuple_element_t<1, _t>, int32_t>));
         EXPECT_TRUE((std::is_same_v<std::tuple_element_t<2, _t>, detail::alignment_coordinate>));

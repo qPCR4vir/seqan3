@@ -48,6 +48,7 @@
 #include <seqan3/core/metafunction/pre.hpp>
 #include <seqan3/core/metafunction/basic.hpp>
 #include <seqan3/core/metafunction/iterator.hpp>
+#include <seqan3/range/shortcuts.hpp>
 #include <seqan3/std/ranges>
 #include <seqan3/std/iterator>
 
@@ -56,32 +57,22 @@
 //NOTE(h-2): for the range overloads we explicitly forbid that the type is iteratoer
 // because some types are actually both (e.g. std::directory_iterator)
 
+namespace seqan3::detail
+{
+
+//!\cond
+template <typename t>
+concept has_value_type = requires { typename value_type_t<remove_cvref_t<t>>; };
+//!\endcond
+
+} // namespace seqan3::detail
+
 namespace seqan3
 {
 
 /*!\addtogroup metafunction
  * \{
  */
-
-// ----------------------------------------------------------------------------
-// iterator
-// ----------------------------------------------------------------------------
-
-/*!\brief For a seqan3::range return its iterator type. [Type metafunction].
- * \tparam t The type to operate on.
- */
-template <std::ranges::Range rng_t>
-using iterator_t = ranges::iterator_t<rng_t>;
-
-// ----------------------------------------------------------------------------
-// sentinel
-// ----------------------------------------------------------------------------
-
-/*!\brief For a seqan3::range return its sentinel type. [Type metafunction].
- * \tparam t The type to operate on.
- */
-template <std::ranges::Range rng_t>
-using sentinel_t = ranges::sentinel_t<rng_t>;
 
 // ----------------------------------------------------------------------------
 // value_type
@@ -97,7 +88,7 @@ template <std::ranges::InputRange rng_t>
 struct value_type<rng_t>
 {
     //!\brief Return the value_type member definition from the queried type's iterator.
-    using type = value_type_t<iterator_t<rng_t>>;
+    using type = value_type_t<std::ranges::iterator_t<rng_t>>;
 };
 
 // ----------------------------------------------------------------------------
@@ -114,7 +105,7 @@ template <std::ranges::InputRange rng_t>
 struct reference<rng_t>
 {
     //!\brief Return the reference member definition from the queried type's iterator.
-    using type = reference_t<iterator_t<rng_t>>;
+    using type = reference_t<std::ranges::iterator_t<rng_t>>;
 };
 
 // ----------------------------------------------------------------------------
@@ -131,7 +122,7 @@ template <std::ranges::InputRange rng_t>
 struct rvalue_reference<rng_t>
 {
     //!\brief Return the rvalue_reference member definition from the queried type's iterator.
-    using type = rvalue_reference_t<iterator_t<rng_t>>;
+    using type = rvalue_reference_t<std::ranges::iterator_t<rng_t>>;
 };
 
 // ----------------------------------------------------------------------------
@@ -148,7 +139,7 @@ template <std::ranges::InputRange rng_t>
 struct const_reference<rng_t>
 {
     //!\brief Resolves to the reference type of the `const_iterator` of t (not the `const iterator`!).
-    using type = reference_t<iterator_t<rng_t const>>;
+    using type = reference_t<std::ranges::iterator_t<rng_t const>>;
 };
 
 // ----------------------------------------------------------------------------
@@ -165,7 +156,7 @@ template <std::ranges::Range rng_t>
 struct difference_type<rng_t>
 {
     //!\brief Return the difference_type member definition from the queried type's iterator.
-    using type = difference_type_t<iterator_t<rng_t>>;
+    using type = difference_type_t<std::ranges::iterator_t<rng_t>>;
 };
 
 // ----------------------------------------------------------------------------
@@ -181,8 +172,8 @@ template <std::ranges::SizedRange rng_t>
 //!\endcond
 struct size_type<rng_t>
 {
-    //!\brief Return the size_type member definition from the queried type's iterator.
-    using type = size_type_t<iterator_t<rng_t>>;
+    //!\brief Return the size_type as returned by the size function.
+    using type = decltype(size(std::declval<rng_t &>()));
 };
 
 // ----------------------------------------------------------------------------
@@ -192,7 +183,7 @@ struct size_type<rng_t>
 //NOTE(h-2): this could be moved to a separate file, because it also applies to iterators
 
 /*!\brief Recursively determines the `value_type` on containers and/or iterators [Type metafunction].
- * \tparam t The type to recurse on; must have `ranges::value_type_t<rng_t>`
+ * \tparam t The type to recurse on; must have `std::ranges::value_type_t<rng_t>`
  *
  * \details
  *
@@ -200,7 +191,7 @@ struct size_type<rng_t>
  */
 template <typename t>
 //!\cond
-    requires requires (t) { typename value_type_t<remove_cvref_t<t>>; }
+    requires detail::has_value_type<t>
 //!\endcond
 struct innermost_value_type
 {
@@ -210,11 +201,7 @@ struct innermost_value_type
 
 //!\cond
 template <typename t>
-    requires requires (t)
-    {
-        typename value_type_t<remove_cvref_t<t>>;
-        typename value_type_t<remove_cvref_t<value_type_t<remove_cvref_t<t>>>>;
-    }
+    requires detail::has_value_type<t> && detail::has_value_type<value_type_t<remove_cvref_t<t>>>
 struct innermost_value_type<t>
 {
     using type = typename innermost_value_type<value_type_t<remove_cvref_t<t>>>::type;
@@ -241,17 +228,13 @@ using innermost_value_type_t = typename innermost_value_type<t>::type;
  */
 template <typename t>
 //!\cond
-    requires requires (t) { typename value_type_t<remove_cvref_t<t>>; }
+    requires detail::has_value_type<t>
 //!\endcond
 constexpr size_t dimension_v = 1;
 
 //!\cond
 template <typename t>
-    requires requires (t)
-    {
-        typename value_type_t<remove_cvref_t<t>>;
-        typename value_type_t<value_type_t<remove_cvref_t<t>>>;
-    }
+    requires detail::has_value_type<t> && detail::has_value_type<value_type_t<remove_cvref_t<t>>>
 constexpr size_t dimension_v<t> = dimension_v<value_type_t<remove_cvref_t<t>>> + 1;
 //!\endcond
 

@@ -32,11 +32,6 @@
 //
 // ==========================================================================
 
-/*!\file
- * \author Jörg Winkler <j.winkler AT fu-berlin.de>
- * \brief Tests for reading sequence files with structure information.
- */
-
 #include <iterator>
 #include <fstream>
 #include <sstream>
@@ -55,7 +50,6 @@
 #include <seqan3/test/tmp_filename.hpp>
 
 using namespace seqan3;
-using namespace seqan3::literal;
 
 TEST(general, concepts)
 {
@@ -307,9 +301,9 @@ TEST_F(structure_file_input_read, record_general)
     size_t counter = 0ul;
     for (auto & rec : fin)
     {
-        EXPECT_TRUE((ranges::equal(get<field::SEQ>(rec), seq_comp[counter])));
-        EXPECT_TRUE((ranges::equal(get<field::ID>(rec), id_comp[counter])));
-        EXPECT_TRUE((ranges::equal(get<field::STRUCTURE>(rec), structure_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(get<field::SEQ>(rec), seq_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(get<field::ID>(rec), id_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(get<field::STRUCTURE>(rec), structure_comp[counter])));
         ++counter;
     }
     EXPECT_EQ(counter, num_records);
@@ -325,9 +319,9 @@ TEST_F(structure_file_input_read, record_struct_bind)
     size_t counter = 0ul;
     for (auto & [ sequence, id, bpp, structure, energy ] : fin)
     {
-        EXPECT_TRUE((ranges::equal(sequence, seq_comp[counter])));
-        EXPECT_TRUE((ranges::equal(id, id_comp[counter])));
-        EXPECT_TRUE((ranges::equal(structure, structure_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(sequence, seq_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(id, id_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(structure, structure_comp[counter])));
         EXPECT_DOUBLE_EQ(energy.value(), energy_comp[counter]);
         bpp_test(bpp, interaction_comp[counter]);
         ++counter;
@@ -345,9 +339,9 @@ TEST_F(structure_file_input_read, record_custom_fields)
     size_t counter = 0ul;
     for (auto & [ id, seq_structure ] : fin)
     {
-        EXPECT_TRUE((ranges::equal(id, id_comp[counter])));
-        EXPECT_TRUE((ranges::equal(seq_structure | view::convert<rna5>, seq_comp[counter])));
-        EXPECT_TRUE((ranges::equal(seq_structure | view::convert<wuss51>, structure_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(id, id_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(seq_structure | view::convert<rna5>, seq_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(seq_structure | view::convert<wuss51>, structure_comp[counter])));
         ++counter;
     }
     EXPECT_EQ(counter, num_records);
@@ -366,10 +360,10 @@ TEST_F(structure_file_input_read, record_file_view)
     size_t counter = 0ul; // the first record will be filtered out
     for (auto & rec : fin | minimum_length_filter)
     {
-        EXPECT_TRUE((ranges::equal(get<field::SEQ>(rec), seq_comp[counter])));
-        EXPECT_TRUE((ranges::equal(get<field::ID>(rec),  id_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(get<field::SEQ>(rec), seq_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(get<field::ID>(rec),  id_comp[counter])));
         bpp_test(get<field::BPP>(rec), interaction_comp[counter]);
-        EXPECT_TRUE((ranges::equal(get<field::STRUCTURE>(rec), structure_comp[counter])));
+        EXPECT_TRUE((std::ranges::equal(get<field::STRUCTURE>(rec), structure_comp[counter])));
         EXPECT_DOUBLE_EQ(get<field::ENERGY>(rec).value(), energy_comp[counter]);
         ++counter;
     }
@@ -395,10 +389,10 @@ TEST_F(structure_file_input_read, column_general)
 
     for (size_t idx = 0ul; idx < num_records; ++idx)
     {
-        EXPECT_TRUE((ranges::equal(seqs[idx], seq_comp[idx])));
-        EXPECT_TRUE((ranges::equal(ids[idx], id_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(seqs[idx], seq_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(ids[idx], id_comp[idx])));
         bpp_test(bpps[idx], interaction_comp[idx]);
-        EXPECT_TRUE((ranges::equal(struc[idx], structure_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(struc[idx], structure_comp[idx])));
         EXPECT_DOUBLE_EQ(energies[idx].value(), energy_comp[idx]);
     }
 }
@@ -413,7 +407,7 @@ TEST_F(structure_file_input_read, column_temporary)
 
     for (size_t idx = 0ul; idx < num_records; ++idx)
     {
-        EXPECT_TRUE((ranges::equal(seqs[idx], seq_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(seqs[idx], seq_comp[idx])));
     }
 }
 
@@ -432,9 +426,9 @@ TEST_F(structure_file_input_read, column_decomposed)
 
     for (size_t idx = 0ul; idx < num_records; ++idx)
     {
-        EXPECT_TRUE((ranges::equal(seqs[idx], seq_comp[idx])));
-        EXPECT_TRUE((ranges::equal(ids[idx], id_comp[idx])));
-        EXPECT_TRUE((ranges::equal(struc[idx], structure_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(seqs[idx], seq_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(ids[idx], id_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(struc[idx], structure_comp[idx])));
         EXPECT_DOUBLE_EQ(energies[idx].value(), energy_comp[idx]);
         bpp_test(bpps[idx], interaction_comp[idx]);
     }
@@ -458,9 +452,9 @@ TEST_F(structure_file_input_read, column_decomposed_temporary)
 
     for (size_t idx = 0ul; idx < num_records; ++idx)
     {
-        EXPECT_TRUE((ranges::equal(seqs[idx], seq_comp[idx])));
-        EXPECT_TRUE((ranges::equal(ids[idx], id_comp[idx])));
-        EXPECT_TRUE((ranges::equal(struc[idx], structure_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(seqs[idx], seq_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(ids[idx], id_comp[idx])));
+        EXPECT_TRUE((std::ranges::equal(struc[idx], structure_comp[idx])));
         EXPECT_DOUBLE_EQ(energies[idx].value(), energy_comp[idx]);
         bpp_test(bpps[idx], interaction_comp[idx]);
     }

@@ -45,7 +45,6 @@
 #include <seqan3/std/view/reverse.hpp>
 
 using namespace seqan3;
-using namespace seqan3::literal;
 
 TEST(view_complement, basic)
 {
@@ -70,9 +69,9 @@ TEST(view_complement, deep_view)
 
     auto v = foo | view::complement;
 
-    ASSERT_EQ(ranges::size(v), 2);
-    EXPECT_TRUE((ranges::equal(v[0], "TGCAT"_dna5)));
-    EXPECT_TRUE((ranges::equal(v[1], "ACGTA"_dna5)));
+    ASSERT_EQ(size(v), 2u);
+    EXPECT_TRUE((std::ranges::equal(v[0], "TGCAT"_dna5)));
+    EXPECT_TRUE((std::ranges::equal(v[1], "ACGTA"_dna5)));
 }
 
 TEST(view_complement, concepts)

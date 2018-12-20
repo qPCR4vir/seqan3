@@ -79,8 +79,8 @@ TEST(random_access_iterator_test, concept_checks)
 // default constructor
 TEST(random_access_iterator_test, default_constructor)
 {
-    seqan3::detail::random_access_iterator<std::vector<uint8_t>> it;
-    seqan3::detail::random_access_iterator<std::vector<uint8_t> const> it2;
+    [[maybe_unused]] seqan3::detail::random_access_iterator<std::vector<uint8_t>> it;
+    [[maybe_unused]] seqan3::detail::random_access_iterator<std::vector<uint8_t> const> it2;
 }
 
 // constructor with empty container reference
@@ -125,10 +125,10 @@ TEST_F(random_access_iterator_test_fixture, cp_constructor1)
 {
     // non-const container
     seqan3::detail::random_access_iterator<std::vector<uint8_t>> it_base(v_empty);
-    seqan3::detail::random_access_iterator<std::vector<uint8_t>> it_derivate(it_base);
+    [[maybe_unused]] seqan3::detail::random_access_iterator<std::vector<uint8_t>> it_derivate(it_base);
     // const container
     seqan3::detail::random_access_iterator<std::vector<uint8_t> const> it_base2(v_const_empty);
-    seqan3::detail::random_access_iterator<std::vector<uint8_t> const> it_derivate2(it_base2);
+    [[maybe_unused]] seqan3::detail::random_access_iterator<std::vector<uint8_t> const> it_derivate2(it_base2);
 }
 
 // copy constructor with non-empty container reference
@@ -216,12 +216,12 @@ TEST_F(random_access_iterator_test_fixture, cp_destructor)
     // non-const
     using iterator_type = typename seqan3::detail::random_access_iterator<std::vector<uint8_t>>;
     iterator_type it(v_empty);
-    iterator_type * it_ptr;
+    iterator_type * it_ptr = &it;
     it_ptr->iterator_type::~iterator_type();
     // const
     using iterator_type2 = typename seqan3::detail::random_access_iterator<std::vector<uint8_t> const>;
     iterator_type2 it2(v_const_empty);
-    iterator_type2 * it_ptr2;
+    iterator_type2 * it_ptr2 = &it2;
     it_ptr2->iterator_type2::~iterator_type2();
 
 }

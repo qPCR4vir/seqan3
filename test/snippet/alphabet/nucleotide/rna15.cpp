@@ -1,4 +1,5 @@
 #include <seqan3/alphabet/nucleotide/rna15.hpp>
+#include <seqan3/io/stream/debug_stream.hpp>
 
 using namespace seqan3;
 
@@ -7,7 +8,7 @@ int main()
 
 {
 //! [code]
-rna15 my_letter{rna15::A};
+rna15 my_letter{'A'_rna15};
 // doesn't work:
 // rna15 my_letter{'A'};
 
@@ -15,7 +16,7 @@ my_letter.assign_char('C'); // <- this does!
 
 my_letter.assign_char('F'); // unknown characters are implicitly converted to N.
 if (my_letter.to_char() == 'N')
-    std::cout << "yeah\n"; // "yeah";
+    debug_stream << "yeah\n"; // "yeah";
 //! [code]
 }
 
@@ -26,7 +27,6 @@ if (my_letter.to_char() == 'N')
 // rna15_vector bar = "ACGTTA";
 
 // but these do:
-using namespace seqan3::literal;
 rna15_vector foo{"ACGTTA"_rna15};
 rna15_vector bar = "ACGTTA"_rna15;
 auto bax = "ACGTTA"_rna15;

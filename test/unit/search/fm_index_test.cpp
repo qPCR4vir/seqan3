@@ -40,7 +40,6 @@
 #include <gtest/gtest.h>
 
 using namespace seqan3;
-using namespace seqan3::literal;
 
 // TODO: EXPECT_EQ is not supported by sdsl
 
@@ -113,7 +112,7 @@ TYPED_TEST(fm_index_test, size)
 
     typename TypeParam::text_type test(8);
     fm.construct(test);
-    EXPECT_EQ(fm.size(), 9); // including a sentinel character
+    EXPECT_EQ(fm.size(), 9u); // including a sentinel character
 }
 
 TYPED_TEST(fm_index_test, serialization)
@@ -129,17 +128,17 @@ TYPED_TEST(fm_index_test, serialization)
     TypeParam fm1{};
     EXPECT_TRUE(fm1.load(path.string()));
 
-    EXPECT_EQ(fm1.size(), 9);
+    EXPECT_EQ(fm1.size(), 9u);
 }
 
 TEST(fm_index_test, concepts)
 {
-    EXPECT_TRUE(fm_index_concept<fm_index<std::vector<dna4>>>);
-    EXPECT_TRUE(fm_index_concept<fm_index<std::vector<dna5>>>);
-    EXPECT_TRUE(fm_index_traits_concept<fm_index_default_traits>);
+    EXPECT_TRUE(FmIndex<fm_index<std::vector<dna4>>>);
+    EXPECT_TRUE(FmIndex<fm_index<std::vector<dna5>>>);
+    EXPECT_TRUE(FmIndexTraits<fm_index_default_traits>);
 
-    EXPECT_TRUE(bi_fm_index_concept<bi_fm_index<std::vector<dna4>>>);
-    EXPECT_TRUE(bi_fm_index_concept<bi_fm_index<std::vector<dna5>>>);
-    EXPECT_TRUE(bi_fm_index_traits_concept<bi_fm_index_default_traits>);
+    EXPECT_TRUE(BiFmIndex<bi_fm_index<std::vector<dna4>>>);
+    EXPECT_TRUE(BiFmIndex<bi_fm_index<std::vector<dna5>>>);
+    EXPECT_TRUE(BiFmIndexTraits<bi_fm_index_default_traits>);
 }
 

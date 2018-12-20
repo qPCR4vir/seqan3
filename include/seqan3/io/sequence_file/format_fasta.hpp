@@ -60,6 +60,7 @@
 #include <seqan3/io/sequence_file/input_options.hpp>
 #include <seqan3/io/sequence_file/output_options.hpp>
 #include <seqan3/io/stream/parse_condition.hpp>
+#include <seqan3/range/shortcuts.hpp>
 #include <seqan3/range/detail/misc.hpp>
 #include <seqan3/range/view/char_to.hpp>
 #include <seqan3/range/view/to_char.hpp>
@@ -117,6 +118,7 @@ public:
     sequence_file_format_fasta & operator=(sequence_file_format_fasta const &) = delete;
     sequence_file_format_fasta(sequence_file_format_fasta &&) = default;
     sequence_file_format_fasta & operator=(sequence_file_format_fasta &&) = default;
+    ~sequence_file_format_fasta() = default;
     //!\}
 
     //!\brief The valid file extensions for this format; note that you can modify this value.
@@ -142,10 +144,11 @@ public:
               id_type                                                                & id,
               qual_type                                                              & SEQAN3_DOXYGEN_ONLY(qualities))
     {
-        auto stream_view = view::subrange<decltype(std::istreambuf_iterator<char>{stream}),
-                                          decltype(std::istreambuf_iterator<char>{})>
-                            {std::istreambuf_iterator<char>{stream},
-                             std::istreambuf_iterator<char>{}};
+        using stream_char_t = typename stream_type::char_type;
+        auto stream_view = view::subrange<decltype(std::istreambuf_iterator<stream_char_t>{stream}),
+                                          decltype(std::istreambuf_iterator<stream_char_t>{})>
+                            {std::istreambuf_iterator<stream_char_t>{stream},
+                             std::istreambuf_iterator<stream_char_t>{}};
         // ID
         read_id(stream_view, options, id);
 
@@ -153,7 +156,7 @@ public:
         read_seq(stream_view, options, sequence);
 
         // make sure "buffer at end" implies "stream at end"
-        if ((std::istreambuf_iterator<char>{stream} == std::istreambuf_iterator<char>{}) &&
+        if ((std::istreambuf_iterator<stream_char_t>{stream} == std::istreambuf_iterator<stream_char_t>{}) &&
             (!stream.eof()))
         {
             stream.get(); // triggers error in stream and sets eof
@@ -172,7 +175,7 @@ public:
                qual_type                      && SEQAN3_DOXYGEN_ONLY(qualities))
     {
 
-        ranges::ostreambuf_iterator stream_it{stream};
+        std::ranges::ostreambuf_iterator stream_it{stream};
 
         // ID
         if constexpr (detail::decays_to_ignore_v<id_type>)
@@ -181,7 +184,7 @@ public:
         }
         else
         {
-            if (ranges::empty(id)) //[[unlikely]]
+            if (empty(id)) //[[unlikely]]
                 throw std::runtime_error{"The ID field may not be empty when writing FASTA files."};
 
             write_id(stream_it, options, id);
@@ -194,7 +197,7 @@ public:
         }
         else
         {
-            if (ranges::empty(sequence)) //[[unlikely]]
+            if (empty(sequence)) //[[unlikely]]
                 throw std::runtime_error{"The SEQ field may not be empty when writing FASTA files."};
 
             write_seq(stream_it, options, sequence);
@@ -213,29 +216,29 @@ protected:
     {
         auto const is_id = is_char<'>'> || is_char<';'>;
 
-        if (!is_id(*ranges::begin(stream_view)))
+        if (!is_id(*begin(stream_view)))
             throw parse_error{std::string{"Expected to be on beginning of ID, but "} + is_id.msg.string() +
-                              " evaluated to false on " + detail::make_printable(*ranges::begin(stream_view))};
+                              " evaluated to false on " + detail::make_printable(*begin(stream_view))};
 
         // read id
         if constexpr (!detail::decays_to_ignore_v<id_type>)
         {
             if (options.truncate_ids)
             {
-                ranges::copy(stream_view | ranges::view::drop_while(is_id || is_blank)     // skip leading >
-                                         | view::take_until_or_throw(is_cntrl || is_blank) // read ID until delimiter…
-                                         | view::char_to<value_type_t<id_type>>,
-                             ranges::back_insert_iterator{id});                                   // … ^A is old delimiter
+                std::ranges::copy(stream_view | ranges::view::drop_while(is_id || is_blank)     // skip leading >
+                                              | view::take_until_or_throw(is_cntrl || is_blank) // read ID until delimiter…
+                                              | view::char_to<value_type_t<id_type>>,
+                                  std::back_inserter(id));                                      // … ^A is old delimiter
 
                 // consume rest of line
                 detail::consume(stream_view | view::take_line_or_throw);
             }
             else
             {
-                ranges::copy(stream_view | view::take_line_or_throw                                        // read line
-                                         | ranges::view::drop_while(is_id || is_blank)                     // skip leading >
-                                         | view::char_to<value_type_t<id_type>>,
-                             ranges::back_insert_iterator{id});
+                std::ranges::copy(stream_view | view::take_line_or_throw                                        // read line
+                                              | ranges::view::drop_while(is_id || is_blank)                     // skip leading >
+                                              | view::char_to<value_type_t<id_type>>,
+                                  std::back_inserter(id));
             }
         }
         else
@@ -257,21 +260,21 @@ protected:
         if constexpr (!detail::decays_to_ignore_v<seq_type>)
         {
             auto constexpr is_legal_alph = is_in_alphabet<seq_legal_alph_type>;
-            ranges::copy(stream_view | view::take_until(is_id)                      // until next header (or end)
-                                     | ranges::view::remove_if(is_space || is_digit)// ignore whitespace and numbers
-                                     | view::transform([is_legal_alph] (char const c)
-                                       {
-                                           if (!is_legal_alph(c))
-                                           {
-                                               throw parse_error{std::string{"Encountered an unexpected letter: "} +
-                                                                   is_legal_alph.msg.string() +
-                                                                   " evaluated to false on " +
-                                                                   detail::make_printable(c)};
-                                           }
-                                           return c;
-                                       })                                           // enforce legal alphabet
-                                     | view::char_to<value_type_t<seq_type>>,       // convert to actual target alphabet
-                         ranges::back_insert_iterator{seq});
+            std::ranges::copy(stream_view | view::take_until(is_id)                      // until next header (or end)
+                                          | ranges::view::remove_if(is_space || is_digit)// ignore whitespace and numbers
+                                          | view::transform([is_legal_alph] (char const c)
+                                            {
+                                                if (!is_legal_alph(c))
+                                                {
+                                                    throw parse_error{std::string{"Encountered an unexpected letter: "} +
+                                                                        is_legal_alph.msg.string() +
+                                                                        " evaluated to false on " +
+                                                                        detail::make_printable(c)};
+                                                }
+                                                return c;
+                                            })                                           // enforce legal alphabet
+                                          | view::char_to<value_type_t<seq_type>>,       // convert to actual target alphabet
+                              std::back_inserter(seq));
         }
         else
         {
@@ -294,7 +297,7 @@ protected:
         if (options.fasta_blank_before_id)
             stream_it = ' ';
 
-        ranges::copy(id, stream_it);
+        std::ranges::copy(id, stream_it);
 
         detail::write_eol(stream_it, options.add_carriage_return);
     }
@@ -308,7 +311,7 @@ protected:
     {
         if (options.fasta_letters_per_line > 0)
         {
-            ranges::copy(seq | view::to_char
+            std::ranges::copy(seq | view::to_char
                              | ranges::view::chunk(options.fasta_letters_per_line)
                              | ranges::view::join(options.add_carriage_return
                                                     ? std::string_view{"\r\n"}
@@ -316,7 +319,7 @@ protected:
                          stream_it);
             // TODO(h-2): benchmark the above vs:
 //             size_t count = 0;
-//             for (auto seq_it = ranges::begin(seq); seq_it != ranges::end(seq_it); ++seq_it)
+//             for (auto seq_it = begin(seq); seq_it != end(seq_it); ++seq_it)
 //             {
 //                 stream_it = to_char(*seq_it);
 //                 ++count;
@@ -328,7 +331,7 @@ protected:
         }
         else
         {
-            ranges::copy(seq | view::to_char, stream_it);
+            std::ranges::copy(seq | view::to_char, stream_it);
         }
 
         detail::write_eol(stream_it, options.add_carriage_return);

@@ -1,36 +1,9 @@
-// ==========================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ==========================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert, FU Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ==========================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 #include <sstream>
 
@@ -38,28 +11,35 @@
 
 #include <seqan3/alphabet/gap/gapped.hpp>
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
+#include <seqan3/alphabet/nucleotide/dna15.hpp>
+#include <seqan3/alphabet/quality/phred42.hpp>
+#include <seqan3/alphabet/quality/qualified.hpp>
+
+#include "../alphabet_test_template.hpp"
+#include "../alphabet_constexpr_test_template.hpp"
 
 using namespace seqan3;
 
-// These test case only test seqan3::gapped specific functions/properties that are not offered by the general
-// `seqan3::alphabet_concept` interface. Those common interface function of `seqan3::gapped` will be tested
-// in `alphabet/alphabet_test.hpp`.
+using gapped_types = ::testing::Types<gapped<dna4>, gapped<dna15>, gapped<qualified<dna4, phred42>>>;
+
+INSTANTIATE_TYPED_TEST_CASE_P(gapped, alphabet, gapped_types);
+INSTANTIATE_TYPED_TEST_CASE_P(gapped, alphabet_constexpr, gapped_types);
 
 TEST(gapped_test, initialise_from_component_alphabet)
 {
     using alphabet_t = gapped<dna4>;
 
-    constexpr alphabet_t letter0{dna4::A};
-    constexpr alphabet_t letter1 = dna4::C;
-    constexpr alphabet_t letter2 = {dna4::G};
-    constexpr alphabet_t letter3 = static_cast<alphabet_t>(dna4::T);
+    constexpr alphabet_t letter0{'A'_dna4};
+    constexpr alphabet_t letter1 = 'C'_dna4;
+    constexpr alphabet_t letter2 = {'G'_dna4};
+    constexpr alphabet_t letter3 = static_cast<alphabet_t>('T'_dna4);
 
-    alphabet_t letter4{dna4::A};
-    alphabet_t letter5 = dna4::C;
-    alphabet_t letter6 = {dna4::G};
-    alphabet_t letter7 = static_cast<alphabet_t>(dna4::T);
+    alphabet_t letter4{'A'_dna4};
+    alphabet_t letter5 = 'C'_dna4;
+    alphabet_t letter6 = {'G'_dna4};
+    alphabet_t letter7 = static_cast<alphabet_t>('T'_dna4);
 
-    constexpr alphabet_t letter8{gap::GAP}; // letter3 = dna4::T; does not work
+    constexpr alphabet_t letter8{gap::GAP}; // letter3 = 'T'_dna4; does not work
     alphabet_t letter9{gap::GAP};
 
     EXPECT_EQ(letter0.to_rank(), 0);
@@ -79,16 +59,16 @@ TEST(gapped_test, assign_from_component_alphabet)
     using alphabet_t = gapped<dna4>;
     alphabet_t letter{};
 
-    letter = dna4::A;
+    letter = 'A'_dna4;
     EXPECT_EQ(letter.to_rank(), 0);
 
-    letter = {dna4::C}; // letter = {dna4::C}; does not work
+    letter = {'C'_dna4}; // letter = {'C'_dna4}; does not work
     EXPECT_EQ(letter.to_rank(), 1);
 
-    letter = static_cast<alphabet_t>(dna4::G);
+    letter = static_cast<alphabet_t>('G'_dna4);
     EXPECT_EQ(letter.to_rank(), 2);
 
-    letter = {static_cast<alphabet_t>(dna4::T)};
+    letter = {static_cast<alphabet_t>('T'_dna4)};
     EXPECT_EQ(letter.to_rank(), 3);
 
     letter = gap::GAP;
@@ -98,8 +78,6 @@ TEST(gapped_test, assign_from_component_alphabet)
 TEST(gapped_test, fulfills_concepts)
 {
     using alphabet_t = gapped<dna4>;
-    EXPECT_TRUE((std::is_pod_v<alphabet_t>));
-    EXPECT_TRUE((std::is_trivial_v<alphabet_t>));
     EXPECT_TRUE((std::is_trivially_copyable_v<alphabet_t>));
     EXPECT_TRUE((std::is_standard_layout_v<alphabet_t>));
 }

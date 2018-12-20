@@ -45,8 +45,10 @@
 #include <seqan3/alphabet/concept.hpp>
 #include <seqan3/alphabet/adaptation/uint.hpp>
 #include <seqan3/core/add_enum_bitwise_operators.hpp>
+#include <seqan3/core/concept/tuple.hpp>
 #include <seqan3/core/metafunction/range.hpp>
 #include <seqan3/io/stream/concept.hpp>
+#include <seqan3/range/shortcuts.hpp>
 #include <seqan3/std/ranges>
 
 namespace seqan3
@@ -106,11 +108,11 @@ public:
      * \brief The standard functions are explicitly defaulted.
      * \{
      */
-    constexpr debug_stream_type() = default;
-    constexpr debug_stream_type(debug_stream_type const &) = default;
-    constexpr debug_stream_type(debug_stream_type &&) = default;
-    constexpr debug_stream_type & operator= (debug_stream_type const &) = default;
-    constexpr debug_stream_type & operator= (debug_stream_type &&) = default;
+    debug_stream_type() = default;
+    debug_stream_type(debug_stream_type const &) = default;
+    debug_stream_type(debug_stream_type &&) = default;
+    debug_stream_type & operator= (debug_stream_type const &) = default;
+    debug_stream_type & operator= (debug_stream_type &&) = default;
     ~debug_stream_type() = default;
 
     //!\brief Construction from an output stream.
@@ -294,6 +296,44 @@ inline debug_stream_type & operator<<(debug_stream_type & s, alphabet_t const l)
     return s << to_char(l);
 }
 
+}
+
+namespace seqan3::detail
+{
+
+//!\brief Helper function to print elements of a tuple separately.
+template<typename tuple_t, std::size_t ...I>
+void print_tuple(debug_stream_type & s, tuple_t && t, std::index_sequence<I...> const &)
+{
+    s << '(';
+    ((s << (I == 0 ? "" : ",") << std::get<I>(t)), ...);
+    s << ')';
+}
+
+} // namespace seqan3::detail
+
+namespace seqan3
+{
+    
+/*!\brief All tuples can be printed by printing their elements separately.
+ * \tparam tuple_t Type of the tuple to be printed; must model seqan3::tuple_like_concept.
+ * \param s The seqan3::debug_stream.
+ * \param t The tuple.
+ * \relates seqan3::debug_stream_type
+ */
+template <typename tuple_t>
+//!\cond
+    requires !std::ranges::InputRange<tuple_t> &&
+             !alphabet_concept<remove_cvref_t<tuple_t>> && // exclude cartesian_composition
+             tuple_like_concept<remove_cvref_t<tuple_t>>
+//!\endcond
+inline debug_stream_type & operator<<(debug_stream_type & s, tuple_t && t)
+{
+    detail::print_tuple(s, std::forward<tuple_t>(t),
+                        std::make_index_sequence<std::tuple_size_v<remove_cvref_t<tuple_t>>>{});
+    return s;
+}
+
 /*!\brief All input ranges can be printed to the seqan3::debug_stream element-wise (if their elements are printable).
  * \tparam rng_t Type of the range to be printed; must model std::ranges::InputRange.
  * \param s The seqan3::debug_stream.
@@ -303,7 +343,7 @@ inline debug_stream_type & operator<<(debug_stream_type & s, alphabet_t const l)
  * \details
  *
  * If the element type models seqan3::alphabet_concept (and is not an unsigned integer), the range is printed
- * just as if it were a string, i.e. `std::vector<dna4>{dna4::C, dna4:G, dna4::A}` is printed as "CGA".
+ * just as if it were a string, i.e. <tt>std::vector<dna4>{'C'_dna4, 'G'_dna4, 'A'_dna4}</tt> is printed as "CGA".
  *
  * In all other cases the elements are comma separated and the range is enclosed in brackets, i.e.
  * `std::vector<int>{3, 1, 33, 7}` is printed as "[3,1,33,7]".
@@ -311,14 +351,15 @@ inline debug_stream_type & operator<<(debug_stream_type & s, alphabet_t const l)
 template <std::ranges::InputRange rng_t>
 inline debug_stream_type & operator<<(debug_stream_type & s, rng_t && r)
 //!\cond
-    requires requires (reference_t<remove_cvref_t<rng_t>> l) { { debug_stream << l }; } &&
+    requires !std::Same<remove_cvref_t<reference_t<rng_t>>, remove_cvref_t<rng_t>> && // prevent recursive instantiation
+             requires (reference_t<rng_t> l) { { debug_stream << l }; } &&
              // exclude null-terminated strings:
              !(std::is_pointer_v<std::decay_t<rng_t>> &&
-               std::Same<remove_cvref_t<reference_t<std::remove_const_t<rng_t>>>, char>)
+               std::Same<remove_cvref_t<reference_t<rng_t>>, char>)
 //!\endcond
 {
-    if constexpr (alphabet_concept<reference_t<remove_cvref_t<rng_t>>> &&
-                  !detail::is_uint_adaptation_v<remove_cvref_t<reference_t<remove_cvref_t<rng_t>>>>)
+    if constexpr (alphabet_concept<remove_cvref_t<reference_t<rng_t>>> &&
+                  !detail::is_uint_adaptation_v<remove_cvref_t<reference_t<rng_t>>>)
     {
         for (auto && l : r)
             s << l;
@@ -326,8 +367,8 @@ inline debug_stream_type & operator<<(debug_stream_type & s, rng_t && r)
     else
     {
         s << '[';
-        auto b = ranges::begin(r);
-        auto e = ranges::end(r);
+        auto b = begin(r);
+        auto e = end(r);
         if (b != e)
         {
             s << *b;

@@ -39,6 +39,10 @@
 
 #pragma once
 
+#include <stdexcept>
+
+#include <seqan3/core/platform.hpp>
+
 namespace seqan3
 {
 
@@ -66,7 +70,7 @@ public:
     parser_invalid_argument(std::string const & s) : std::invalid_argument(s) {}
 };
 
-//!\brief Argument parser exception thrown when encountering unkown option.
+//!\brief Argument parser exception thrown when encountering unknown option.
 class unknown_option : public parser_invalid_argument
 {
 public:

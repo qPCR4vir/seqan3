@@ -1,40 +1,14 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
 
 #include <seqan3/alphabet/all.hpp>
+#include <seqan3/core/concept/tuple.hpp>
 
 using namespace seqan3;
 
@@ -70,25 +44,25 @@ public:
     // -------------------------------------------------------------------------
     dna4 value_1()
     {
-        return dna4::G;
+        return 'G'_dna4;
     }
     rna4 assignable_to_value_1()
     {
-        return rna4::G;
+        return 'G'_rna4;
     }
     dna5 value_2()
     {
-        return dna5::G;
+        return 'G'_dna5;
     }
     rna5 assignable_to_value_2()
     {
-        return rna5::G;
+        return 'G'_rna5;
     }
     auto values_to_cmp()
     {
-        return std::make_tuple(/*low */dna4::A, dna5::A,
-                               /*mid */dna4::C, dna5::C,
-                               /*high*/dna4::T, dna5::T);
+        return std::make_tuple(/*low */'A'_dna4, 'A'_dna5,
+                               /*mid */'C'_dna4, 'C'_dna5,
+                               /*high*/'T'_dna4, 'T'_dna5);
     }
 };
 
@@ -106,11 +80,11 @@ public:
     // -------------------------------------------------------------------------
     dna4 value_1()
     {
-        return dna4::G;
+        return 'G'_dna4;
     }
     rna4 assignable_to_value_1()
     {
-        return rna4::G;
+        return 'G'_rna4;
     }
     phred42 value_2()
     {
@@ -122,9 +96,9 @@ public:
     }
     auto values_to_cmp()
     {
-        return std::make_tuple(/*low */dna4::A, phred42{1},
-                               /*mid */dna4::C, phred42{4},
-                               /*high*/dna4::T, phred42{9});
+        return std::make_tuple(/*low */'A'_dna4, phred42{1},
+                               /*mid */'C'_dna4, phred42{4},
+                               /*high*/'T'_dna4, phred42{9});
     }
 };
 
@@ -142,11 +116,11 @@ public:
     // -------------------------------------------------------------------------
     rna4 value_1()
     {
-        return rna4::G;
+        return 'G'_rna4;
     }
     dna4 assignable_to_value_1()
     {
-        return dna4::G;
+        return 'G'_dna4;
     }
     dot_bracket3 value_2()
     {
@@ -158,9 +132,9 @@ public:
     }
     auto values_to_cmp()
     {
-        return std::make_tuple(/*low */rna4::A, dot_bracket3::UNPAIRED,
-                               /*mid */rna4::C, dot_bracket3::PAIR_OPEN,
-                               /*high*/rna4::T, dot_bracket3::PAIR_CLOSE);
+        return std::make_tuple(/*low */'A'_rna4, dot_bracket3::UNPAIRED,
+                               /*mid */'C'_rna4, dot_bracket3::PAIR_OPEN,
+                               /*high*/'T'_rna4, dot_bracket3::PAIR_CLOSE);
     }
 
 };
@@ -207,6 +181,11 @@ using composition_types = ::testing::Types<test_composition<dna4, dna5>,
                                            qualified<dna4, phred42>>;
 
 TYPED_TEST_CASE(cartesian_composition_test, composition_types);
+
+TYPED_TEST(cartesian_composition_test, concept_check)
+{
+    EXPECT_TRUE(tuple_like_concept<TypeParam>);
+}
 
 // default/zero construction
 TYPED_TEST(cartesian_composition_test, ctr)
@@ -307,23 +286,11 @@ TYPED_TEST(cartesian_composition_test, get_i)
 {
     TypeParam t0 = TestFixture::instance;
 
-    static_assert(std::is_same_v<decltype(seqan3::get<0>(t0)), decltype(TestFixture::value_1()) &>);
-    static_assert(std::is_same_v<decltype(seqan3::get<1>(t0)), decltype(TestFixture::value_2()) &>);
+//     static_assert(std::is_same_v<decltype(get<0>(t0)), decltype(TestFixture::value_1()) &>);
+//     static_assert(std::is_same_v<decltype(get<1>(t0)), decltype(TestFixture::value_2()) &>);
 
-    EXPECT_EQ(seqan3::get<0>(t0), TestFixture::value_1());
-    EXPECT_EQ(seqan3::get<1>(t0), TestFixture::value_2());
-}
-
-// std::get<1>
-TYPED_TEST(cartesian_composition_test, stdget_i)
-{
-    TypeParam t0 = TestFixture::instance;
-
-    static_assert(std::is_same_v<decltype(std::get<0>(t0)), decltype(TestFixture::value_1()) &>);
-    static_assert(std::is_same_v<decltype(std::get<1>(t0)), decltype(TestFixture::value_2()) &>);
-
-    EXPECT_EQ(std::get<0>(t0), TestFixture::value_1());
-    EXPECT_EQ(std::get<1>(t0), TestFixture::value_2());
+    EXPECT_EQ(get<0>(t0), TestFixture::value_1());
+    EXPECT_EQ(get<1>(t0), TestFixture::value_2());
 }
 
 // structured bindings
@@ -344,17 +311,8 @@ TYPED_TEST(cartesian_composition_test, get_type)
 {
     TypeParam t0 = TestFixture::instance;
 
-    EXPECT_EQ(seqan3::get<decltype(TestFixture::value_1())>(t0), TestFixture::value_1());
-    EXPECT_EQ(seqan3::get<decltype(TestFixture::value_2())>(t0), TestFixture::value_2());
-}
-
-// std::get<type>
-TYPED_TEST(cartesian_composition_test, stdget_type)
-{
-    TypeParam t0 = TestFixture::instance;
-
-    EXPECT_EQ(std::get<decltype(TestFixture::value_1())>(t0), TestFixture::value_1());
-    EXPECT_EQ(std::get<decltype(TestFixture::value_2())>(t0), TestFixture::value_2());
+    EXPECT_EQ(get<decltype(TestFixture::value_1())>(t0), TestFixture::value_1());
+    EXPECT_EQ(get<decltype(TestFixture::value_2())>(t0), TestFixture::value_2());
 }
 
 // Custom constructor that assigns one type and defaults the other values

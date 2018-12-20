@@ -40,6 +40,9 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
+
+#include <seqan3/core/platform.hpp>
 
 namespace seqan3
 {

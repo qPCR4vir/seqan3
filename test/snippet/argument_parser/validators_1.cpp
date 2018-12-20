@@ -1,12 +1,13 @@
 //! [usage]
 #include <seqan3/argument_parser/all.hpp>
+#include <seqan3/io/stream/debug_stream.hpp>
 
 int main(int argc, const char ** argv)
 {
     seqan3::argument_parser myparser("Test", argc, argv); // initialize
 
     int myint;
-    seqan3::integral_range_validator<int> my_validator{2, 10};
+    seqan3::arithmetic_range_validator<int> my_validator{2, 10};
 
     myparser.add_option(myint,'i',"integer","Give me a number.",
                         seqan3::option_spec::DEFAULT, my_validator);
@@ -27,7 +28,7 @@ int main(int argc, const char ** argv)
         return 0;
     }
 
-    std::cout << "integer given by user passed validation: " << myint << "\n";
+    seqan3::debug_stream << "integer given by user passed validation: " << myint << "\n";
     return 0;
 }
 //! [usage]

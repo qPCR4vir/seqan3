@@ -54,7 +54,6 @@
 #endif // SEQAN3_WITH_CEREAL
 
 using namespace seqan3;
-using namespace seqan3::literal;
 
 template <typename T>
 class container_of_container : public ::testing::Test
@@ -66,7 +65,7 @@ using container_of_container_types = ::testing::Types<std::vector<std::vector<dn
 
 TYPED_TEST_CASE(container_of_container, container_of_container_types);
 
-using In = iterator_t<seqan3::concatenated_sequences<seqan3::bitcompressed_vector<seqan3::dna4> > >;
+using In = std::ranges::iterator_t<seqan3::concatenated_sequences<seqan3::bitcompressed_vector<seqan3::dna4> > >;
 
 static_assert(std::Readable<In>);
 
@@ -158,7 +157,7 @@ TYPED_TEST(container_of_container, iterators)
     EXPECT_TRUE(t1.cend() == t1.end());
 
     // writability
-    (*t1.begin())[0] = dna4::T;
+    (*t1.begin())[0] = 'T'_dna4;
     EXPECT_TRUE(dna4_vector(*t1.begin())  == "TCGT"_dna4);
 }
 

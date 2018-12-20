@@ -626,7 +626,7 @@ TEST(parse_test, too_few_arguments_error)
     EXPECT_THROW(parser2.parse(), too_few_arguments);
 }
 
-TEST(parse_test, unkown_option_error)
+TEST(parse_test, unknown_option_error)
 {
     // unknown short option
     const char * argv[] = {"./argument_parser_test", "-i", "15"};
@@ -761,4 +761,29 @@ TEST(parse_test, argv_const_combinations)
 
     EXPECT_NO_THROW(parser.parse());
     EXPECT_TRUE(flag_value);
+}
+
+TEST(parse_test, multiple_empty_options)
+{
+    int option_value;
+
+    {
+        const char * argv[]{"./empty_long", "-s=1"};
+        argument_parser parser("empty_long", 2, argv);
+        parser.add_option(option_value, 'i', "", "no long");
+        parser.add_option(option_value, 's', "", "no long");
+
+        EXPECT_NO_THROW(parser.parse());
+        EXPECT_EQ(1, option_value);
+    }
+
+    {
+        const char * argv[]{"./empty_short", "--long=2"};
+        argument_parser parser("empty_short", 2, argv);
+        parser.add_option(option_value, '\0', "longi", "no short");
+        parser.add_option(option_value, '\0', "long", "no short");
+
+        EXPECT_NO_THROW(parser.parse());
+        EXPECT_EQ(2, option_value);
+    }
 }
