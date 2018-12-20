@@ -42,6 +42,8 @@
 
 #ifndef _WIN32
 #   include <sys/ioctl.h>
+#else
+#   include <windows.h>
 #endif
 
 #include <unistd.h>
@@ -84,7 +86,7 @@ inline bool is_terminal()
  */
 inline unsigned get_terminal_width()
 {
-#ifdef linux
+#ifndef _WIN32
 
     struct winsize w;
     w.ws_row = 0;
@@ -94,7 +96,11 @@ inline unsigned get_terminal_width()
 
     return w.ws_col;
 #else
-        return 80;    // ??
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int ret = GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    if (ret)
+        return csbi.dwSize.Y;   // Y is a (signed) short in my winnt.h
+    // exception ?? return 0 ? 80 ??
 #endif
 }
 
