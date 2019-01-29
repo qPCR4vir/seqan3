@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Joerg Winkler <j.winkler AT fu-berlin.de>
@@ -97,7 +70,7 @@ public:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    constexpr structured_rna() : base_type{} {}
+    constexpr structured_rna() noexcept : base_type{} {}
     constexpr structured_rna(structured_rna const &) = default;
     constexpr structured_rna(structured_rna &&) = default;
     constexpr structured_rna & operator =(structured_rna const &) = default;
@@ -107,13 +80,13 @@ public:
     using base_type::base_type; // Inherit non-default constructors
 
     //!\copydoc cartesian_composition::cartesian_composition(component_type const alph)
-    SEQAN3_DOXYGEN_ONLY(( constexpr structured_rna(component_type const alph) {} ))
+    SEQAN3_DOXYGEN_ONLY(( constexpr structured_rna(component_type const alph) noexcept {} ))
     //!\copydoc cartesian_composition::cartesian_composition(indirect_component_type const alph)
-    SEQAN3_DOXYGEN_ONLY(( constexpr structured_rna(indirect_component_type const alph) {} ))
+    SEQAN3_DOXYGEN_ONLY(( constexpr structured_rna(indirect_component_type const alph) noexcept {} ))
     //!\copydoc cartesian_composition::operator=(component_type const alph)
-    SEQAN3_DOXYGEN_ONLY(( constexpr structured_rna & operator=(component_type const alph) {} ))
+    SEQAN3_DOXYGEN_ONLY(( constexpr structured_rna & operator=(component_type const alph) noexcept {} ))
     //!\copydoc cartesian_composition::operator=(indirect_component_type const alph)
-    SEQAN3_DOXYGEN_ONLY(( constexpr structured_rna & operator=(indirect_component_type const alph) {} ))
+    SEQAN3_DOXYGEN_ONLY(( constexpr structured_rna & operator=(indirect_component_type const alph) noexcept {} ))
     //!\}
 
     // Inherit operators from base
@@ -128,9 +101,16 @@ public:
     //!\name Write functions
     //!\{
     //!\brief Assign from a nucleotide character. This modifies the internal sequence letter.
-    constexpr structured_rna & assign_char(char_type const c)
+    constexpr structured_rna & assign_char(char_type const c) noexcept
     {
         seqan3::assign_char(get<0>(*this), c);
+        return *this;
+    }
+
+    //!\brief Strict assign from a nucleotide character. This modifies the internal sequence letter.
+    structured_rna & assign_char_strict(char_type const c)
+    {
+        seqan3::assign_char_strict(get<0>(*this), c);
         return *this;
     }
     //!\}
@@ -159,6 +139,12 @@ public:
         return structured_rna{get<0>(*this).complement(), get<1>(*this)};
     }
     //!\}
+
+    //!\brief Validate whether a character is valid in the sequence alphabet.
+    static constexpr bool char_is_valid(char_type const c) noexcept
+    {
+        return char_is_valid_for<sequence_alphabet_type>(c);
+    }
 
     //!\name RNA structure properties
     //!\{

@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Joerg Winkler <j.winkler AT fu-berlin.de>
@@ -70,7 +43,7 @@ namespace seqan3
  *```
  *
  * \par Usage
- * The following code example creates a dot_bracket3 vector, modifies it, and prints the result to stdout.
+ * The following code example creates a dot_bracket3 vector, modifies it, and prints the result to stderr.
  * \snippet test/snippet/alphabet/structure/dot_bracket3.cpp general
  */
 class dot_bracket3 : public alphabet_base<dot_bracket3, 3>
@@ -86,23 +59,12 @@ public:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    constexpr dot_bracket3() : base_t{} {}
+    constexpr dot_bracket3() noexcept : base_t{} {}
     constexpr dot_bracket3(dot_bracket3 const &) = default;
     constexpr dot_bracket3(dot_bracket3 &&) = default;
     constexpr dot_bracket3 & operator=(dot_bracket3 const &) = default;
     constexpr dot_bracket3 & operator=(dot_bracket3 &&) = default;
     ~dot_bracket3() = default;
-    //!\}
-
-    /*!\name Letter values
-     * \brief Static member "letters" that can be assigned to the alphabet or used in aggregate initialization.
-     * \details Similar to an Enum interface. *Don't worry about the `internal_type`.*
-     */
-    //!\{
-    static const dot_bracket3 UNPAIRED;
-    static const dot_bracket3 PAIR_OPEN;
-    static const dot_bracket3 PAIR_CLOSE;
-    static const dot_bracket3 UNKNOWN;
     //!\}
 
     //!\name RNA structure properties
@@ -113,7 +75,7 @@ public:
      */
     constexpr bool is_pair_open() const noexcept
     {
-        return *this == PAIR_OPEN;
+        return to_rank() == 1u;
     }
 
     /*!\brief Check whether the character represents a leftward interaction in an RNA structure.
@@ -121,7 +83,7 @@ public:
      */
     constexpr bool is_pair_close() const noexcept
     {
-        return *this == PAIR_CLOSE;
+        return to_rank() == 2u;
     }
 
     /*!\brief Check whether the character represents an unpaired position in an RNA structure.
@@ -129,14 +91,14 @@ public:
      */
     constexpr bool is_unpaired() const noexcept
     {
-        return *this == UNPAIRED;
+        return to_rank() == 0u;
     }
 
     /*!\brief The ability of this alphabet to represent pseudoknots, i.e. crossing interactions, up to a certain depth.
      * \details It is the number of distinct pairs of interaction symbols the format supports. The value 1 denotes no
      * pseudoknot support.
      */
-    static constexpr uint8_t max_pseudoknot_depth{1};
+    static constexpr uint8_t max_pseudoknot_depth{1u};
     //!\}
 
 protected:
@@ -157,55 +119,56 @@ protected:
         {
             std::array<rank_type, 256> rank_table{};
 
-            // initialize with UNKNOWN (std::array::fill unfortunately not constexpr)
+            // initialize with unpaired (std::array::fill unfortunately not constexpr)
             for (rank_type & rnk : rank_table)
-                rnk = 0;
+                rnk = 0u;
 
             // canonical
-            rank_table['.'] = 0;
-            rank_table['('] = 1;
-            rank_table[')'] = 2;
+            rank_table['.'] = 0u;
+            rank_table['('] = 1u;
+            rank_table[')'] = 2u;
 
             return rank_table;
         } ()
     };
 };
 
-constexpr dot_bracket3 dot_bracket3::UNPAIRED   = dot_bracket3{}.assign_char('.');
-constexpr dot_bracket3 dot_bracket3::PAIR_OPEN  = dot_bracket3{}.assign_char('(');
-constexpr dot_bracket3 dot_bracket3::PAIR_CLOSE = dot_bracket3{}.assign_char(')');
-constexpr dot_bracket3 dot_bracket3::UNKNOWN    = dot_bracket3::UNPAIRED;
-
-} // namespace seqan3
-
-// ------------------------------------------------------------------
-// literals
-// ------------------------------------------------------------------
-
-namespace seqan3
-{
-
-/*!\brief dot_bracket3 literal
+/*!\name Literals
+ * \{
+ *
+ * \brief The seqan3::db3 string literal.
  * \relates seqan3::dot_bracket3
+ * \param[in] str A pointer to the character string to assign.
+ * \param[in] len The size of the character string to assign.
  * \returns std::vector<seqan3::dot_bracket3>
  *
- * You can use this string literal to easily assign to a vector of dot_bracket3 characters:
- *
- *```.cpp
- *     std::vector<dot_bracket3> foo{".(..)."_db3};
- *     std::vector<dot_bracket3> bar = ".(..)."_db3;
- *     auto bax = ".(..)."_db3;
- *```
+ * You can use this string literal to easily assign to a vector of seqan3::dot_bracket3 characters:
+ * \snippet test/snippet/alphabet/structure/dot_bracket3.cpp string_literal
  */
 inline std::vector<dot_bracket3> operator""_db3(const char * str, std::size_t len)
 {
     std::vector<dot_bracket3> vec;
     vec.resize(len);
 
-    for (size_t idx = 0u; idx < len; ++idx)
+    for (size_t idx = 0ul; idx < len; ++idx)
         vec[idx].assign_char(str[idx]);
 
     return vec;
 }
+
+/*!\brief The seqan3::db3 char literal.
+ * \relates seqan3::dot_bracket3
+ * \param[in] ch The character to represent as dot bracket.
+ * \returns seqan3::dot_bracket3
+ *
+ * You can use this string literal to assign a seqan3::dot_bracket3 character:
+ * \snippet test/snippet/alphabet/structure/dot_bracket3.cpp char_literal
+ */
+constexpr dot_bracket3 operator""_db3(char const ch) noexcept
+{
+    return dot_bracket3{}.assign_char(ch);
+}
+
+//!\}
 
 } // namespace seqan3

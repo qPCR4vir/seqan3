@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------------------------------
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
 // This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
 // -----------------------------------------------------------------------------------------------------
@@ -124,19 +124,18 @@ public:
     }
     dot_bracket3 value_2()
     {
-        return dot_bracket3::PAIR_OPEN;
+        return '('_db3;
     }
     dot_bracket3 assignable_to_value_2()
     {
-        return dot_bracket3::PAIR_OPEN; // replace if assignable subtype becomes available
+        return '('_db3; // replace if assignable subtype becomes available
     }
     auto values_to_cmp()
     {
-        return std::make_tuple(/*low */'A'_rna4, dot_bracket3::UNPAIRED,
-                               /*mid */'C'_rna4, dot_bracket3::PAIR_OPEN,
-                               /*high*/'T'_rna4, dot_bracket3::PAIR_CLOSE);
+        return std::make_tuple(/*low */'A'_rna4, '.'_db3,
+                               /*mid */'C'_rna4, '('_db3,
+                               /*high*/'T'_rna4, ')'_db3);
     }
-
 };
 
 template <>
@@ -153,25 +152,25 @@ public:
     // -------------------------------------------------------------------------
     aa27 value_1()
     {
-        return aa27::K;
+        return 'K'_aa27;
     }
     aa27 assignable_to_value_1()
     {
-        return aa27::K; // replace if assignable subtype becomes available
+        return 'K'_aa27; // replace if assignable subtype becomes available
     }
     dssp9 value_2()
     {
-        return dssp9::I;
+        return 'I'_dssp9;
     }
     dssp9 assignable_to_value_2()
     {
-        return dssp9::I; // replace if assignable subtype becomes available
+        return 'I'_dssp9; // replace if assignable subtype becomes available
     }
     auto values_to_cmp()
     {
-        return std::make_tuple(/*low */aa27::A, dssp9::H,
-                               /*mid */aa27::P, dssp9::I,
-                               /*high*/aa27::Z, dssp9::X);
+        return std::make_tuple(/*low */'A'_aa27, 'H'_dssp9,
+                               /*mid */'P'_aa27, 'I'_dssp9,
+                               /*high*/'Z'_aa27, 'X'_dssp9);
     }
 };
 

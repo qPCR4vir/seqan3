@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------------------------------
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
 // This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
 // -----------------------------------------------------------------------------------------------------
@@ -20,36 +20,36 @@ TEST(composition, custom_constructors)
     qualified<dna4, phred42> t13{phred42{3}};
     qualified<dna4, phred42> t14{phred63{3}};
 
-    qualified<aa27, phred63> t20{aa27::K, phred63{}};
-    qualified<aa27, phred63> t21{aa27::K};
+    qualified<aa27, phred63> t20{'K'_aa27, phred63{}};
+    qualified<aa27, phred63> t21{'K'_aa27};
     qualified<aa27, phred63> t22{phred63{3}};
     qualified<aa27, phred63> t23{phred42{3}};
 
     qualified<gapped<dna4>, phred42> t31{'C'_dna4};
     qualified<gapped<dna4>, phred42> t32{'C'_rna4};
     qualified<gapped<dna4>, phred42> t33{phred42{3}};
-    qualified<gapped<dna4>, phred42> t34{gap::GAP};
+    qualified<gapped<dna4>, phred42> t34{gap{}};
     qualified<gapped<dna4>, phred42> t35{gapped<dna4>('C'_dna4)};
-    qualified<gapped<dna4>, phred42> t36{gapped<dna4>(gap::GAP)};
-    qualified<gapped<dna4>, phred42> t37{gap::GAP, phred42{3}};
+    qualified<gapped<dna4>, phred42> t36{gapped<dna4>(gap{})};
+    qualified<gapped<dna4>, phred42> t37{gap{}, phred42{3}};
 
     gapped<qualified<dna4, phred42>> t41{'C'_dna4};
     gapped<qualified<dna4, phred42>> t42{'C'_rna4};
     gapped<qualified<dna4, phred42>> t43{phred42{3}};
-    gapped<qualified<dna4, phred42>> t44{gap::GAP};
+    gapped<qualified<dna4, phred42>> t44{gap{}};
     gapped<qualified<dna4, phred42>> t45{qualified<dna4, phred42>{'C'_dna4, phred42{0}}};
 
     qualified<qualified<gapped<dna4>, phred42>, phred42> t51{'C'_dna4};
     qualified<qualified<gapped<dna4>, phred42>, phred42> t52{'C'_rna4};
     qualified<qualified<gapped<dna4>, phred42>, phred42> t53{phred42{3}};
-    qualified<qualified<gapped<dna4>, phred42>, phred42> t54{gap::GAP};
+    qualified<qualified<gapped<dna4>, phred42>, phred42> t54{gap{}};
     qualified<qualified<gapped<dna4>, phred42>, phred42> t55{gapped<dna4>('C'_dna4)};
-    qualified<qualified<gapped<dna4>, phred42>, phred42> t56{gapped<dna4>(gap::GAP)};
+    qualified<qualified<gapped<dna4>, phred42>, phred42> t56{gapped<dna4>(gap{})};
 
     gapped<union_composition<dna4, phred42>> t61{'C'_dna4};
     gapped<union_composition<dna4, phred42>> t62{'C'_rna4};
     gapped<union_composition<dna4, phred42>> t63{phred42{3}};
-    gapped<union_composition<dna4, phred42>> t64{gap::GAP};
+    gapped<union_composition<dna4, phred42>> t64{gap{}};
     gapped<union_composition<dna4, phred42>> t65{qualified<dna4, phred42>{'C'_dna4, phred42{0}}};
 
     EXPECT_EQ(t11, t12);
@@ -88,35 +88,35 @@ TEST(composition_constexpr, custom_constructor)
     constexpr qualified<dna4, phred42> t13{phred42{3}};
     constexpr qualified<dna4, phred42> t14{phred63{3}};
 
-    constexpr qualified<aa27, phred63> t21{aa27::K};
+    constexpr qualified<aa27, phred63> t21{'K'_aa27};
     constexpr qualified<aa27, phred63> t22{phred63{3}};
     constexpr qualified<aa27, phred63> t23{phred42{3}};
 
     constexpr qualified<gapped<dna4>, phred42> t31{'C'_dna4};
     constexpr qualified<gapped<dna4>, phred42> t32{'C'_rna4};
     constexpr qualified<gapped<dna4>, phred42> t33{phred42{3}};
-    constexpr qualified<gapped<dna4>, phred42> t34{gap::GAP};
+    constexpr qualified<gapped<dna4>, phred42> t34{gap{}};
     constexpr qualified<gapped<dna4>, phred42> t35{gapped<dna4>('C'_dna4)};
-    constexpr qualified<gapped<dna4>, phred42> t36{gapped<dna4>(gap::GAP)};
-    constexpr qualified<gapped<dna4>, phred42> t37{gap::GAP, phred42{3}};
+    constexpr qualified<gapped<dna4>, phred42> t36{gapped<dna4>(gap{})};
+    constexpr qualified<gapped<dna4>, phred42> t37{gap{}, phred42{3}};
 
     constexpr gapped<qualified<dna4, phred42>> t41{'C'_dna4};
     constexpr gapped<qualified<dna4, phred42>> t42{'C'_rna4};
     constexpr gapped<qualified<dna4, phred42>> t43{phred42{3}};
-    constexpr gapped<qualified<dna4, phred42>> t44{gap::GAP};
+    constexpr gapped<qualified<dna4, phred42>> t44{gap{}};
     constexpr gapped<qualified<dna4, phred42>> t45{qualified<dna4, phred42>{'C'_dna4, phred42{0}}};
 
     constexpr qualified<qualified<gapped<dna4>, phred42>, phred42> t51{'C'_dna4};
     constexpr qualified<qualified<gapped<dna4>, phred42>, phred42> t52{'C'_rna4};
     constexpr qualified<qualified<gapped<dna4>, phred42>, phred42> t53{phred42{3}};
-    constexpr qualified<qualified<gapped<dna4>, phred42>, phred42> t54{gap::GAP};
+    constexpr qualified<qualified<gapped<dna4>, phred42>, phred42> t54{gap{}};
     constexpr qualified<qualified<gapped<dna4>, phred42>, phred42> t55{gapped<dna4>('C'_dna4)};
-    constexpr qualified<qualified<gapped<dna4>, phred42>, phred42> t56{gapped<dna4>(gap::GAP)};
+    constexpr qualified<qualified<gapped<dna4>, phred42>, phred42> t56{gapped<dna4>(gap{})};
 
     constexpr gapped<union_composition<dna4, phred42>> t61{'C'_dna4};
     constexpr gapped<union_composition<dna4, phred42>> t62{'C'_rna4};
     constexpr gapped<union_composition<dna4, phred42>> t63{phred42{3}};
-    constexpr gapped<union_composition<dna4, phred42>> t64{gap::GAP};
+    constexpr gapped<union_composition<dna4, phred42>> t64{gap{}};
     constexpr gapped<union_composition<dna4, phred42>> t65{qualified<dna4, phred42>{'C'_dna4, phred42{0}}};
 }
 
@@ -133,10 +133,10 @@ TEST(composition, custom_assignment)
     EXPECT_EQ(t11, t13);
     // t11 = phred63{3}; // does not work because of explicit conversion
 
-    qualified<aa27, phred63> t20{aa27::K, phred63{}};
+    qualified<aa27, phred63> t20{'K'_aa27, phred63{}};
     qualified<aa27, phred63> t21{};
-    qualified<aa27, phred63> t22{aa27::K, phred63{3}};
-    t21 = aa27::K;
+    qualified<aa27, phred63> t22{'K'_aa27, phred63{3}};
+    t21 = 'K'_aa27;
     EXPECT_EQ(t20, t21);
     t21 = phred63{3};
     EXPECT_EQ(t21, t22);
@@ -144,24 +144,24 @@ TEST(composition, custom_assignment)
     qualified<gapped<dna4>, phred42> t31{};
     qualified<gapped<dna4>, phred42> t32{'C'_dna4};
     qualified<gapped<dna4>, phred42> t33{'C'_dna4, phred42{3}};
-    qualified<gapped<dna4>, phred42> t34{gap::GAP, phred42{3}};
+    qualified<gapped<dna4>, phred42> t34{gap{}, phred42{3}};
     t31 = 'C'_dna4;
     EXPECT_EQ(t31, t32);
     t31 = 'C'_rna4;
     EXPECT_EQ(t31, t32);
     t31 = phred42{3};
     EXPECT_EQ(t31, t33);
-    t31 = gap::GAP;
+    t31 = gap{};
     EXPECT_EQ(t31, t34);
     t31 = gapped<dna4>('C'_dna4);
     EXPECT_EQ(t31, t33);
-    t31 = gapped<dna4>(gap::GAP);
+    t31 = gapped<dna4>(gap{});
     EXPECT_EQ(t31, t34);
 
     gapped<qualified<dna4, phred42>> t41{};
     gapped<qualified<dna4, phred42>> t42{'C'_dna4};
     gapped<qualified<dna4, phred42>> t43{qualified<dna4, phred42>{'C'_dna4, phred42{3}}};
-    gapped<qualified<dna4, phred42>> t44{gap::GAP};
+    gapped<qualified<dna4, phred42>> t44{gap{}};
     gapped<qualified<dna4, phred42>> t45{qualified<dna4, phred42>{'C'_dna4, phred42{0}}};
     t41 = 'C'_dna4;
     EXPECT_EQ(t41, t42);
@@ -169,7 +169,7 @@ TEST(composition, custom_assignment)
     EXPECT_EQ(t41, t42);
     t41 = phred42{3};
     // EXPECT_EQ(t41, t43); should work intuitively but does not because on assignment the qualified object is defaulted
-    t41 = gap::GAP;
+    t41 = gap{};
     EXPECT_EQ(t41, t44);
     t41 = qualified<dna4, phred42>{'C'_dna4, phred42{0}};
     EXPECT_EQ(t41, t45);
@@ -177,24 +177,24 @@ TEST(composition, custom_assignment)
     qualified<qualified<gapped<dna4>, phred42>, phred42> t51{};
     qualified<qualified<gapped<dna4>, phred42>, phred42> t52{'C'_dna4};
     qualified<qualified<gapped<dna4>, phred42>, phred42> t53{qualified<gapped<dna4>, phred42>{'C'_dna4, phred42{0}}, phred42{3}};
-    qualified<qualified<gapped<dna4>, phred42>, phred42> t54{qualified<gapped<dna4>, phred42>{gap::GAP, phred42{0}}, phred42{3}};
+    qualified<qualified<gapped<dna4>, phred42>, phred42> t54{qualified<gapped<dna4>, phred42>{gap{}, phred42{0}}, phred42{3}};
     t51 = 'C'_dna4;
     EXPECT_EQ(t51, t52);
     t51 = 'C'_rna4;
     EXPECT_EQ(t51, t52);
     t51 = phred42{3};
     EXPECT_EQ(t51, t53);
-    t51 = gap::GAP;
+    t51 = gap{};
     EXPECT_EQ(t51, t54);
     t51 = gapped<dna4>('C'_dna4);
     EXPECT_EQ(t51, t53);
-    t51 = gapped<dna4>(gap::GAP);
+    t51 = gapped<dna4>(gap{});
     EXPECT_EQ(t51, t54);
 
     gapped<union_composition<dna4, phred42>> t61{};
     gapped<union_composition<dna4, phred42>> t62{'C'_dna4};
     gapped<union_composition<dna4, phred42>> t63{phred42{3}};
-    gapped<union_composition<dna4, phred42>> t64{gap::GAP};
+    gapped<union_composition<dna4, phred42>> t64{gap{}};
     gapped<union_composition<dna4, phred42>> t65{qualified<dna4, phred42>{'C'_dna4, phred42{0}}};
     t61 = 'C'_dna4;
     EXPECT_EQ(t61, t62);
@@ -202,7 +202,7 @@ TEST(composition, custom_assignment)
     EXPECT_EQ(t61, t62);
     t61 = phred42{3};
     EXPECT_EQ(t61, t63);
-    t61 = gap::GAP;
+    t61 = gap{};
     EXPECT_EQ(t61, t64);
     t61 = qualified<dna4, phred42>{'C'_dna4, phred42{0}};
     EXPECT_EQ(t61, t65);
@@ -218,36 +218,36 @@ constexpr bool do_assignment()
     // t11 = phred63{3}; // does not work because of explicit conversion
 
     qualified<aa27, phred63> t21{};
-    t21 = aa27::K;
+    t21 = 'K'_aa27;
     t21 = phred63{3};
 
     qualified<gapped<dna4>, phred42> t31{};
     t31 = 'C'_dna4;
     t31 = 'C'_rna4;
     t31 = phred42{3};
-    t31 = gap::GAP;
+    t31 = gap{};
     t31 = gapped<dna4>('C'_dna4);
-    t31 = gapped<dna4>(gap::GAP);
+    t31 = gapped<dna4>(gap{});
 
     gapped<qualified<dna4, phred42>> t41{};
     t41 = 'C'_dna4;
     t41 = 'C'_rna4;
     t41 = phred42{3};
-    t41 = gap::GAP;
+    t41 = gap{};
     t41 = qualified<dna4, phred42>{'C'_dna4, phred42{0}};
 
     qualified<qualified<gapped<dna4>, phred42>, phred42> t51{};
     t51 = 'C'_dna4;
     t51 = 'C'_rna4;
     t51 = phred42{3};
-    t51 = gap::GAP;
+    t51 = gap{};
     t51 = gapped<dna4>('C'_dna4);
-    t51 = gapped<dna4>(gap::GAP);
+    t51 = gapped<dna4>(gap{});
 
     gapped<union_composition<dna4, phred42>> t61{};
     t61 = 'C'_rna4;
     t61 = phred42{3};
-    t61 = gap::GAP;
+    t61 = gap{};
     t61 = qualified<dna4, phred42>{'C'_dna4, phred42{0}};
 
     return true;
@@ -269,23 +269,23 @@ TEST(composition, custom_comparison)
     EXPECT_EQ('C'_rna4,    t11);
     EXPECT_EQ(phred42{3}, t11);
 
-    qualified<aa27, phred63> t21{aa27::K, phred63{3}};
-    EXPECT_EQ(t21, aa27::K);
+    qualified<aa27, phred63> t21{'K'_aa27, phred63{3}};
+    EXPECT_EQ(t21, 'K'_aa27);
     EXPECT_EQ(t21, phred63{3});
-    EXPECT_EQ(aa27::K,     t21);
+    EXPECT_EQ('K'_aa27,    t21);
     EXPECT_EQ(phred63{3},  t21);
 
     qualified<gapped<dna4>, phred42> t31{'C'_dna4, phred42{3}};
     EXPECT_EQ(t31, 'C'_dna4);
     EXPECT_EQ(t31, 'C'_rna4);
     EXPECT_EQ(t31, phred42{3});
-    EXPECT_NE(t31, gap::GAP);
+    EXPECT_NE(t31, gap{});
     EXPECT_EQ(t31, gapped<dna4>('C'_dna4));
 
     EXPECT_EQ('C'_dna4,                t31);
     EXPECT_EQ('C'_rna4,                t31);
     EXPECT_EQ(phred42{3},             t31);
-    EXPECT_NE(gap::GAP,               t31);
+    EXPECT_NE(gap{},               t31);
     EXPECT_EQ(gapped<dna4>('C'_dna4),  t31);
 
     gapped<qualified<dna4, phred42>> t41{qualified<dna4, phred42>{'C'_dna4, phred42{3}}};
@@ -293,31 +293,31 @@ TEST(composition, custom_comparison)
 
     EXPECT_EQ(t41, (gapped<qualified<dna4, phred42>>{qualified<dna4, phred42>{'C'_dna4, phred42{3}}}));
     EXPECT_EQ(t42, 'C'_dna4);
-    EXPECT_NE(t41, gap::GAP);
-    EXPECT_NE(gap::GAP, t41);
+    EXPECT_NE(t41, gap{});
+    EXPECT_NE(gap{}, t41);
 
     qualified<qualified<gapped<dna4>, phred42>, phred42> t51{qualified<gapped<dna4>, phred42>{'C'_dna4, phred42{3}}};
     EXPECT_EQ(t51, 'C'_dna4);
     EXPECT_EQ(t51, 'C'_rna4);
-    EXPECT_NE(t51, gap::GAP);
+    EXPECT_NE(t51, gap{});
     EXPECT_EQ(t51, gapped<dna4>('C'_dna4));
     EXPECT_EQ(t51, phred42{0});
 
     EXPECT_EQ('C'_dna4,                t51);
     EXPECT_EQ('C'_rna4,                t51);
     EXPECT_EQ(phred42{0},             t51);
-    EXPECT_NE(gap::GAP,               t51);
+    EXPECT_NE(gap{},               t51);
     EXPECT_EQ(gapped<dna4>('C'_dna4),  t51);
 
     gapped<union_composition<dna4, phred42>> t61{'C'_rna4};
     EXPECT_EQ(t61, 'C'_rna4);
     EXPECT_EQ(t61, 'C'_dna4);
-    EXPECT_NE(t61, gap::GAP);
+    EXPECT_NE(t61, gap{});
     EXPECT_NE(t61, phred42{0});
 
     EXPECT_EQ('C'_rna4,    t61);
     EXPECT_EQ('C'_dna4,    t61);
-    EXPECT_NE(gap::GAP,   t61);
+    EXPECT_NE(gap{},   t61);
     EXPECT_NE(phred42{0}, t61);
 
     EXPECT_EQ(t41, 'C'_dna4);

@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Christopher Pockrandt <christopher.pockrandt AT fu-berlin.de>
@@ -63,7 +36,7 @@ namespace seqan3::detail
  */
 //!\cond
 template <typename t>
-concept SdslIndex = requires (t sdsl_index)
+SEQAN3_CONCEPT SdslIndex = requires (t sdsl_index)
 {
     typename t::size_type;
 
@@ -119,7 +92,7 @@ namespace seqan3
  */
 //!\cond
 template <typename t>
-concept FmIndexTraits = requires (t v)
+SEQAN3_CONCEPT FmIndexTraits = requires (t v)
 {
     typename t::sdsl_index_type;
 
@@ -149,7 +122,7 @@ concept FmIndexTraits = requires (t v)
  */
 //!\cond
 template <typename t>
-concept FmIndex = std::Semiregular<t> && requires (t index)
+SEQAN3_CONCEPT FmIndex = std::Semiregular<t> && requires (t index)
 {
     typename t::text_type;
     typename t::char_type;
@@ -159,7 +132,7 @@ concept FmIndex = std::Semiregular<t> && requires (t index)
     // NOTE: circular dependency
     // requires FmIndexCursor<typename t::cursor_type>;
 
-    requires requires (t index, std::vector<typename t::char_type> const text)
+    requires requires (t index, std::vector<value_type_t<typename t::text_type>> const text)
     {
         { t(text) };
         { index.construct(text) } -> void;
@@ -211,7 +184,7 @@ concept FmIndex = std::Semiregular<t> && requires (t index)
  */
 //!\cond
 template <typename t>
-concept FmIndexCursor = std::Semiregular<t> && requires (t cur)
+SEQAN3_CONCEPT FmIndexCursor = std::Semiregular<t> && requires (t cur)
 {
     typename t::index_type;
     typename t::size_type;
@@ -234,7 +207,9 @@ concept FmIndexCursor = std::Semiregular<t> && requires (t cur)
     { cur.query()        } -> auto;
     { *cur               } -> auto;
     { cur.count()        } -> typename t::size_type;
-    { cur.locate()       } -> std::vector<typename t::size_type>;
+    { cur.locate()       } -> std::conditional_t<t::index_type::is_collection,
+                                                std::vector<std::pair<typename t::size_type, typename t::size_type>>,
+                                                std::vector<typename t::size_type>>;
     { cur.lazy_locate()  } -> auto;
 };
 //!\endcond
@@ -267,7 +242,7 @@ concept FmIndexCursor = std::Semiregular<t> && requires (t cur)
  */
 //!\cond
 template <typename t>
-concept BiFmIndexTraits = requires (t v)
+SEQAN3_CONCEPT BiFmIndexTraits = requires (t v)
 {
     requires FmIndexTraits<typename t::fm_index_traits>;
     requires FmIndexTraits<typename t::rev_fm_index_traits>;
@@ -305,7 +280,7 @@ concept BiFmIndexTraits = requires (t v)
  */
 //!\cond
 template <typename t>
-concept BiFmIndex = FmIndex<t> && requires (t index)
+SEQAN3_CONCEPT BiFmIndex = FmIndex<t> && requires (t index)
 {
     typename t::cursor_type; // already required by FmIndex but has a different documentation
     typename t::fwd_cursor_type;
@@ -351,7 +326,7 @@ concept BiFmIndex = FmIndex<t> && requires (t index)
  */
 //!\cond
 template <typename t>
-concept BiFmIndexCursor = FmIndexCursor<t> && requires (t cur)
+SEQAN3_CONCEPT BiFmIndexCursor = FmIndexCursor<t> && requires (t cur)
 {
     requires BiFmIndex<typename t::index_type>;
 

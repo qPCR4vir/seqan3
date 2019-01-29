@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Hannes Hauswedell <hannes.hauswedell AT fu-berlin.de>
@@ -108,16 +81,23 @@
  *
  * To solve this problem, every alphabet defines two interfaces:
  *
- *   1. a **character based interface** with
- *     1. the underlying character type able to represent this alphabet visually (almost always `char`,
- * but could be `char16_t` or `char32_t`, as well)
- *     2. a seqan3::to_char function to produce the visual representation
- *     3. a seqan3::assign_char function to assign from the visual representation
- *   2. a **rank based interface** with
- *     1. the underlying rank type able to represent this alphabet numerically; this type must be able to represent
- * the numbers from `0` to `alphabet size - 1` (often `uint8_t`, but sometimes a larger unsigned integral type)
- *     2. a seqan3::to_rank function to produce the numerical representation
- *     3. a seqan3::assign_rank function to assign from the numerical representation
+ *   1. a **rank based interface** with
+ *     * the \link seqan3::underlying_rank underlying rank type \endlink able to represent this alphabet numerically;
+ *       this type must be able to represent the numbers from `0` to `alphabet size - 1` (often `uint8_t`, but
+ *       sometimes a larger unsigned integral type);
+ *     * a \link seqan3::alphabet_concept::to_rank to_rank \endlink function to produce the numerical representation;
+ *     * an \link seqan3::alphabet_concept::assign_rank assign_rank \endlink function to assign from the numerical
+ *       representation;
+ *   2. a **character based interface** with
+ *     * the \link seqan3::underlying_char underlying character type \endlink able to represent this alphabet visually
+ *       (almost always `char`, but could be `char16_t` or `char32_t`, as well)
+ *     * a \link seqan3::alphabet_concept::to_char to_char \endlink function to produce the visual representation;
+ *     * an \link seqan3::alphabet_concept::assign_char assign_char \endlink function to assign from the visual
+ *       representation;
+ *     * a \link seqan3::alphabet_concept::char_is_valid_for char_is_valid_for \endlink function that checks whether
+ *       a character value has a one-to-one mapping to an alphabet value;
+ *     * an \link seqan3::alphabet_concept::assign_char_strict assign_char_strict \endlink function to assign a
+ *       characters while verifying its validity.
  *
  * To prevent the aforementioned ambiguity, you can neither assign from rank or char representation via `operator=`,
  * nor can you cast the alphabet to either of it's representation forms, **you need to explicitly use the
@@ -128,6 +108,16 @@
  * representation
  * is generated via conversion tables. This is, however, not required as long as both interfaces are provided
  * and all functions operate in constant time.
+ *
+ * The same applies for printing characters although seqan3::debug_stream provides some convenience:
+ * \snippet test/snippet/alphabet/all.cpp print
+ *
+ * To reduce the burden of calling `assign_char` often, most alphabets in SeqAn3 provide custom literals for
+ * the alphabet and sequences over the alphabet:
+ *
+ * \snippet test/snippet/alphabet/all.cpp literal
+ *
+ * Note, however, that literals **are not** required by the concept.
  *
  * <small>In the documentation you will also encounter seqan3::semi_alphabet_concept. It describes "one half" of an
  * alphabet and only defines the rank interface as a type requirement. It is mainly used internally and not
@@ -164,11 +154,11 @@
 #pragma once
 
 #include <seqan3/alphabet/adaptation/all.hpp>
-#include <seqan3/alphabet/concept.hpp>
-#include <seqan3/alphabet/nucleotide/all.hpp>
-#include <seqan3/alphabet/structure/all.hpp>
-#include <seqan3/alphabet/quality/all.hpp>
 #include <seqan3/alphabet/aminoacid/all.hpp>
-#include <seqan3/alphabet/gap/all.hpp>
 #include <seqan3/alphabet/composition/all.hpp>
+#include <seqan3/alphabet/concept.hpp>
+#include <seqan3/alphabet/gap/all.hpp>
 #include <seqan3/alphabet/mask/all.hpp>
+#include <seqan3/alphabet/nucleotide/all.hpp>
+#include <seqan3/alphabet/quality/all.hpp>
+#include <seqan3/alphabet/structure/all.hpp>

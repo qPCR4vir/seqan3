@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \brief Adaptations of concepts from the standard library.
@@ -87,7 +60,7 @@ constexpr bool is_basic_string_v = is_basic_string<basic_string_t>::value;
  */
 //!\cond
 template <typename type>
-concept sequence_container_concept_modified_by_const_iterator = requires (type val, type val2)
+SEQAN3_CONCEPT sequence_container_concept_modified_by_const_iterator = requires (type val, type val2)
 {
     { val.insert(val.cbegin(), val2.front())                                           } -> typename type::iterator;
     { val.insert(val.cbegin(), typename type::value_type{})                            } -> typename type::iterator;
@@ -148,7 +121,7 @@ namespace seqan3
  */
 //!\cond
 template <typename type>
-concept container_concept = requires (type val, type val2, type const cval, typename type::iterator it)
+SEQAN3_CONCEPT container_concept = requires (type val, type val2, type const cval, typename type::iterator it)
 {
     // member types
     typename type::value_type;
@@ -213,7 +186,7 @@ concept container_concept = requires (type val, type val2, type const cval, type
  */
 //!\cond
 template <typename type>
-concept sequence_container_concept = requires (type val, type val2, type const cval)
+SEQAN3_CONCEPT sequence_container_concept = requires (type val, type val2, type const cval)
 {
     requires container_concept<type>;
 
@@ -277,7 +250,7 @@ concept sequence_container_concept = requires (type val, type val2, type const c
  */
 //!\cond
 template <typename type>
-concept random_access_container_concept = requires (type val)
+SEQAN3_CONCEPT random_access_container_concept = requires (type val)
 {
     requires sequence_container_concept<type>;
 
@@ -303,7 +276,7 @@ concept random_access_container_concept = requires (type val)
  */
 //!\cond
 template <typename type>
-concept reservable_container_concept = requires (type val)
+SEQAN3_CONCEPT reservable_container_concept = requires (type val)
 {
     requires random_access_container_concept<type>;
 

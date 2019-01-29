@@ -1,44 +1,17 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
+
+#include <range/v3/algorithm/equal.hpp>
 
 #include "configuration_mock.hpp"
 
 #include <seqan3/core/algorithm/configuration.hpp>
-
-using ::testing::ElementsAre;
 
 using namespace seqan3;
 
@@ -158,25 +131,25 @@ TEST(configuration, get_by_type_template)
     configuration cfg = bar{1} | foobar<>{std::vector{0, 1, 2, 3}};
 
     { // l-value
-        EXPECT_THAT(get<foobar>(cfg).value, ElementsAre(0, 1, 2, 3));
+        EXPECT_TRUE(ranges::equal(get<foobar>(cfg).value, std::vector{0, 1, 2, 3}));
         EXPECT_TRUE((std::is_same_v<decltype(get<foobar>(cfg)), foobar<> &>));
     }
 
     { // const l-value
         configuration<bar, foobar<>> const cfg_c{cfg};
-        EXPECT_THAT(get<foobar>(cfg_c).value, ElementsAre(0, 1, 2, 3));
+        EXPECT_TRUE(ranges::equal(get<foobar>(cfg_c).value, std::vector{0, 1, 2, 3}));
         EXPECT_TRUE((std::is_same_v<decltype(get<foobar>(cfg_c)), foobar<> const &>));
     }
 
     { // r-value
         configuration<bar, foobar<>> cfg_r{cfg};
-        EXPECT_THAT(get<foobar>(std::move(cfg_r)).value, ElementsAre(0, 1, 2, 3));
+        EXPECT_TRUE(ranges::equal(get<foobar>(std::move(cfg_r)).value, std::vector{0, 1, 2, 3}));
         EXPECT_TRUE((std::is_same_v<decltype(get<foobar>(std::move(cfg_r))), foobar<> &&>));
     }
 
     { // const r-value
         configuration<bar, foobar<>> const cfg_cr{cfg};
-        EXPECT_THAT(get<foobar>(std::move(cfg_cr)).value, ElementsAre(0, 1, 2, 3));
+        EXPECT_TRUE(ranges::equal(get<foobar>(std::move(cfg_cr)).value, std::vector{0, 1, 2, 3}));
         // TODO(rrahn): Enable when get(const &&) is fixed for gcc7 as well.
         // EXPECT_TRUE((std::is_same_v<decltype(get<foobar>(std::move(cfg_cr))), foobar<> const &&>));
     }
@@ -232,25 +205,25 @@ TEST(configuration, value_or_by_type_template)
     configuration cfg = bar{1} | foobar<>{std::vector<int>{0, 1, 2, 3}};
 
     { // l-value
-        EXPECT_THAT(cfg.value_or<foobar>(3.3), ElementsAre(0, 1, 2, 3));
+        EXPECT_TRUE(ranges::equal(cfg.value_or<foobar>(3.3), std::vector{0, 1, 2, 3}));
         EXPECT_FLOAT_EQ(cfg.value_or<foo>(1.3), 1.3);
     }
 
     { // const l-value
         configuration<bar, foobar<>> const cfg_c{cfg};
-        EXPECT_THAT(cfg_c.value_or<foobar>(3.3), ElementsAre(0, 1, 2, 3));
+        EXPECT_TRUE(ranges::equal(cfg_c.value_or<foobar>(3.3), std::vector{0, 1, 2, 3}));
         EXPECT_FLOAT_EQ(cfg_c.value_or<foo>(1.3), 1.3);
     }
 
     { // r-value
         configuration<bar, foobar<>> cfg_r{cfg};
-        EXPECT_THAT(std::move(cfg_r).value_or<foobar>(3.3), ElementsAre(0, 1, 2, 3));
+        EXPECT_TRUE(ranges::equal(std::move(cfg_r).value_or<foobar>(3.3), std::vector{0, 1, 2, 3}));
         EXPECT_FLOAT_EQ(std::move(cfg_r).value_or<foo>(1.3), 1.3);
     }
 
     { // const r-value
         configuration<bar, foobar<>> const cfg_cr{cfg};
-        EXPECT_THAT(std::move(cfg_cr).value_or<foobar>(3.3), ElementsAre(0, 1, 2, 3));
+        EXPECT_TRUE(ranges::equal(std::move(cfg_cr).value_or<foobar>(3.3), std::vector{0, 1, 2, 3}));
         EXPECT_FLOAT_EQ(std::move(cfg_cr).value_or<foo>(1.3), 1.3);
     }
 }

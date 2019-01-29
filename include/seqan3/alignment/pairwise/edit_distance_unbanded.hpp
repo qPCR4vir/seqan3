@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \brief Contains a pairwise alignment algorithm for edit distance but without band.
@@ -51,6 +24,7 @@
 #include <seqan3/alignment/matrix/alignment_score_matrix.hpp>
 #include <seqan3/alignment/matrix/alignment_trace_algorithms.hpp>
 #include <seqan3/alignment/matrix/alignment_trace_matrix.hpp>
+#include <seqan3/alignment/pairwise/align_result_selector.hpp>
 #include <seqan3/alignment/pairwise/align_result.hpp>
 #include <seqan3/core/algorithm/configuration.hpp>
 #include <seqan3/range/shortcuts.hpp>
@@ -60,7 +34,7 @@ namespace seqan3::detail
 {
 //!\cond
 template <typename align_config_t>
-concept semi_global_config_concept =
+SEQAN3_CONCEPT semi_global_config_concept =
     std::remove_reference_t<align_config_t>::template exists<align_cfg::aligned_ends>() &&
 requires (align_config_t & cfg)
 {
@@ -79,13 +53,13 @@ requires (align_config_t & cfg)
 };
 
 template <typename align_config_t>
-concept global_config_concept = requires (align_config_t & cfg)
+SEQAN3_CONCEPT global_config_concept = requires (align_config_t & cfg)
 {
     requires cfg.template exists<align_cfg::mode<detail::global_alignment_type>>();
 };
 
 template <typename align_config_t>
-concept max_errors_concept = requires (align_config_t & cfg)
+SEQAN3_CONCEPT max_errors_concept = requires (align_config_t & cfg)
 {
     requires cfg.template exists<align_cfg::max_error>();
 };
@@ -95,13 +69,13 @@ concept max_errors_concept = requires (align_config_t & cfg)
  * \ingroup pairwise
  */
 template <typename traits_type>
-concept edit_distance_trait_concept = requires
+SEQAN3_CONCEPT edit_distance_trait_concept = requires
 {
     typename std::remove_reference_t<traits_type>::word_type;
 };
 
 /*!\brief The default traits type for the edit distance algorithm.
- * \ingroup pairwise
+ * \ingroup pairwise_alignment
  */
 struct default_edit_distance_trait_type
 {
@@ -110,7 +84,7 @@ struct default_edit_distance_trait_type
 };
 
 /*!\brief This calculates an alignment using the edit distance and without a band.
- * \ingroup pairwise
+ * \ingroup pairwise_alignment
  * \tparam database_t     \copydoc pairwise_alignment_edit_distance_unbanded::database_type
  * \tparam query_t        \copydoc pairwise_alignment_edit_distance_unbanded::query_type
  * \tparam align_config_t The type of the alignment config.
@@ -448,30 +422,32 @@ public:
      * \param[in,out] res The alignment result to fill.
      * \returns A reference to the filled alignment result.
      */
-    template <typename result_type>
-    result_type & operator()(result_type & res)
+    template <typename result_value_type>
+    align_result<result_value_type> & operator()(align_result<result_value_type> & res)
     {
         _compute();
-        if constexpr (std::tuple_size_v<result_type> >= 2)
+        result_value_type res_vt{};
+        if constexpr (!std::is_same_v<decltype(res_vt.score), std::nullopt_t *>)
         {
-            get<align_result_key::score>(res) = score();
+            res_vt.score = score();
         }
 
-        if constexpr (std::tuple_size_v<result_type> >= 3)
+        if constexpr (!std::is_same_v<decltype(res_vt.end_coordinate), std::nullopt_t *>)
         {
-            get<align_result_key::end>(res) = end_coordinate();
+            res_vt.end_coordinate = end_coordinate();
         }
 
         [[maybe_unused]] alignment_trace_matrix matrix = trace_matrix();
-        if constexpr (std::tuple_size_v<result_type> >= 4)
+        if constexpr (!std::is_same_v<decltype(res_vt.begin_coordinate), std::nullopt_t *>)
         {
-            get<align_result_key::begin>(res) = alignment_begin_coordinate(matrix, get<align_result_key::end>(res));
+            res_vt.begin_coordinate = alignment_begin_coordinate(matrix, res_vt.end_coordinate);
         }
 
-        if constexpr (std::tuple_size_v<result_type> >= 5)
+        if constexpr (!std::is_same_v<decltype(res_vt.alignment), std::nullopt_t *>)
         {
-            get<align_result_key::trace>(res) = alignment_trace(database, query, matrix, get<align_result_key::end>(res));
+            res_vt.alignment = alignment_trace(database, query, matrix, res_vt.end_coordinate);
         }
+        res = align_result<result_value_type>{res_vt};
         return res;
     }
 
@@ -510,8 +486,8 @@ public:
         return {col, query.size() - 1};
     }
 
-    //!\brief Return the trace of the alignment
-    auto trace() const noexcept
+    //!\brief Return the alignment, i.e. the actual base pair matching.
+    auto alignment() const noexcept
     {
         return alignment_trace(database, query, trace_matrix(), end_coordinate());
     }
@@ -603,6 +579,77 @@ template<typename database_t, typename query_t, typename config_t, typename trai
 pairwise_alignment_edit_distance_unbanded(database_t && database, query_t && query, config_t config, traits_t)
     -> pairwise_alignment_edit_distance_unbanded<database_t, query_t, config_t, traits_t>;
 //!\}
+
+// ----------------------------------------------------------------------------
+// edit_distance_wrapper
+// ----------------------------------------------------------------------------
+
+/*!\brief This type wraps the call to the seqan3::detail::pairwise_alignment_edit_distance_unbanded algorithm.
+ * \implements std::Invocable
+ * \tparam config_t The configuration type.
+ *
+ * \details
+ *
+ * This wrapper class is used to decouple the sequence types from the algorithm class type.
+ * Within the alignment configuration a std::function object with this wrapper stored is returned
+ * if an edit distance should be computed. On invocation it delegates the call to the actual implementation
+ * of the edit distance algorithm, while the interface is unified with the execution model of the pairwise alignment
+ * algorithms.
+ */
+template <typename config_t>
+class edit_distance_wrapper
+{
+public:
+    /*!\name Constructor, destructor and assignment
+     * \brief Defaulted all standard constructor.
+     * \{
+     */
+    constexpr edit_distance_wrapper() = default;
+    constexpr edit_distance_wrapper(edit_distance_wrapper const &) = default;
+    constexpr edit_distance_wrapper(edit_distance_wrapper &&) = default;
+    constexpr edit_distance_wrapper & operator=(edit_distance_wrapper const &) = default;
+    constexpr edit_distance_wrapper & operator=(edit_distance_wrapper &&) = default;
+    ~edit_distance_wrapper() = default;
+
+    /*!\brief Constructs the wrapper with the passed configuration.
+     * \param cfg The configuration to be passed to the algorithm.
+     *
+     * \details
+     *
+     * The configuration is copied once to the heap during construction and maintained by a std::shared_ptr.
+     * The configuration is not passed to the function-call-operator of this function object, in order to avoid
+     * incompatible configurations between the passed configuration and the one used during configuration of this
+     * class. Further the function object will be stored in a std::function which requires copyable objects and
+     * in parallel executions the function object must be copied as well.
+     */
+    constexpr edit_distance_wrapper(config_t const & cfg) : cfg_ptr{new config_t(cfg)}
+    {}
+    //!}
+
+    /*!\brief Invokes the actual alignment computation given two sequences.
+     * \tparam    first_batch_t  The type of the first sequence (or packed sequences); must model std::ForwardRange.
+     * \tparam    second_batch_t The type of the second sequence (or packed sequences); must model std::ForwardRange.
+     * \param[in] first_batch    The first sequence (or packed sequences).
+     * \param[in] second_batch   The second sequence (or packed sequences).
+     */
+    template <std::ranges::ForwardRange first_batch_t, std::ranges::ForwardRange second_batch_t>
+    constexpr auto operator()(first_batch_t && first_batch, second_batch_t && second_batch)
+    {
+        using result_t = typename detail::align_result_selector<remove_cvref_t<first_batch_t>,
+                                                                remove_cvref_t<second_batch_t>,
+                                                                remove_cvref_t<config_t>>::type;
+
+        pairwise_alignment_edit_distance_unbanded algo{std::forward<first_batch_t>(first_batch),
+                                                       std::forward<second_batch_t>(second_batch),
+                                                       *cfg_ptr};
+        align_result<result_t> res{};
+        return algo(res);
+    }
+
+private:
+    //!\brief The alignment configuration stored on the heap.
+    std::shared_ptr<remove_cvref_t<config_t>> cfg_ptr{};
+};
 
 //!\cond
 template<typename database_t, typename query_t, typename align_config_t, typename traits_t>

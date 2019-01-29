@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \brief Provides parse conditions for tokenization.
@@ -46,7 +19,7 @@
 
 #include <seqan3/std/concepts>
 
-#include <seqan3/alphabet/all.hpp>
+#include <seqan3/alphabet/concept.hpp>
 #include <seqan3/core/detail/reflection.hpp>
 #include <seqan3/core/metafunction/basic.hpp>
 #include <seqan3/io/exception.hpp>
@@ -133,7 +106,7 @@ class parse_condition_base;
  */
 //!\cond
 template <typename condition_t>
-concept parse_condition_concept = requires
+SEQAN3_CONCEPT parse_condition_concept = requires
 {
     requires std::Predicate<std::remove_reference_t<condition_t>, char>;
     requires std::is_base_of_v<parse_condition_base<remove_cvref_t<condition_t>>,
@@ -404,24 +377,9 @@ struct is_in_interval_type : public parse_condition_base<is_in_interval_type<int
  * \implements seqan3::detail::parse_condition_concept
  * \tparam alphabet_t The alphabet type. Must model seqan3::alphabet_concept.
  */
-template <alphabet_concept alphabet_t>
+template <detail::constexpr_alphabet_concept alphabet_t>
 struct is_in_alphabet_type : public parse_condition_base<is_in_alphabet_type<alphabet_t>>
 {
-private:
-    //!\brief Conversion table from lower to upper case (ignoring locales).
-    static constexpr std::array<unsigned char, 256> to_upper = [] () constexpr
-    {
-        std::array<unsigned char, 256> ret{};
-
-        for (size_t i = 0; i < 256; ++i)
-            ret[i] = i;
-
-        for (size_t i = 'a'; i <= 'z'; ++i)
-            ret[i] = i - 'a' + 'A';
-
-        return ret;
-    }();
-
 public:
     //!\brief The message representing this condition.
     static constexpr auto msg = constexpr_string{"is_in_alphabet<"} +
@@ -438,8 +396,8 @@ public:
     {
         data_t ret{};
 
-        for (unsigned char i = 0; i < 255; ++i)
-            ret[i] = to_char(assign_char(alphabet_t{}, i)) == to_upper[i];
+        for (size_t i = 0; i < 256; ++i)
+            ret[i] = char_is_valid_for<alphabet_t>(static_cast<uint8_t>(i));
 
         return ret;
     }();

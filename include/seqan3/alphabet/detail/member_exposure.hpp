@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (chr) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (chr) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Hannes Hauswedell <hannes.hauswedell AT fu-berlin.de>
@@ -65,7 +38,7 @@ namespace seqan3
  */
 template <typename alphabet_type_with_members>
 //!\cond
-    requires requires (alphabet_type_with_members alph) { typename alphabet_type_with_members::rank_type; }
+    requires requires { typename alphabet_type_with_members::rank_type; }
 //!\endcond
 struct underlying_rank<alphabet_type_with_members>
 {
@@ -80,13 +53,12 @@ struct underlying_rank<alphabet_type_with_members>
  */
 template <typename alphabet_type_with_members>
 //!\cond
-    requires requires (alphabet_type_with_members alph) { alphabet_type_with_members::value_size; }
+    requires requires { alphabet_type_with_members::value_size; }
 //!\endcond
-struct alphabet_size<alphabet_type_with_members>
-{
-    //!\brief The size retrieved from the type's member.
-    static auto constexpr value = alphabet_type_with_members::value_size;
-};
+struct alphabet_size<alphabet_type_with_members> :
+    std::integral_constant<decltype(alphabet_type_with_members::value_size),
+                           alphabet_type_with_members::value_size>
+{};
 
 /*!\brief Implementation of seqan3::semi_alphabet_concept::to_rank() that delegates to a member function.
  * \tparam alphabet_type Must provide a `.to_rank()` member function.
@@ -94,9 +66,14 @@ struct alphabet_size<alphabet_type_with_members>
  * \returns The letter's value in the alphabet's rank type (usually a `uint*_t`).
  */
 template <typename alphabet_type>
-constexpr underlying_rank_t<alphabet_type> to_rank(alphabet_type const alph)
+//!\cond
     requires requires (alphabet_type alph) { { alph.to_rank() } -> underlying_rank_t<alphabet_type>; }
+//!\endcond
+constexpr underlying_rank_t<alphabet_type> to_rank(alphabet_type const alph) noexcept
 {
+    static_assert(noexcept(alph.to_rank()),
+                  "The to_rank() free function can only forward to .to_rank() member functions that "
+                  "are qualified as \"noexcept\".");
     return alph.to_rank();
 }
 
@@ -107,9 +84,14 @@ constexpr underlying_rank_t<alphabet_type> to_rank(alphabet_type const alph)
  * \returns A reference to the alphabet letter you passed in.
  */
 template <typename alphabet_type>
-constexpr alphabet_type & assign_rank(alphabet_type & alph, underlying_rank_t<alphabet_type> const rank)
+//!\cond
     requires requires (alphabet_type alph) { { alph.assign_rank(uint8_t{0}) } -> alphabet_type &; }
+//!\endcond
+constexpr alphabet_type & assign_rank(alphabet_type & alph, underlying_rank_t<alphabet_type> const rank) noexcept
 {
+    static_assert(noexcept(alph.assign_rank(rank)),
+                  "The assign_rank() free function can only forward to .assign_rank() member functions that "
+                  "are qualified as \"noexcept\".");
     return alph.assign_rank(rank);
 }
 
@@ -125,9 +107,14 @@ constexpr alphabet_type & assign_rank(alphabet_type & alph, underlying_rank_t<al
  * ~~~
  */
 template <typename alphabet_type>
-constexpr alphabet_type && assign_rank(alphabet_type && alph, underlying_rank_t<alphabet_type> const rank)
+//!\cond
     requires requires (alphabet_type alph) { { alph.assign_rank(uint8_t{0}) } -> alphabet_type &; }
+//!\endcond
+constexpr alphabet_type assign_rank(alphabet_type && alph, underlying_rank_t<alphabet_type> const rank) noexcept
 {
+    static_assert(noexcept(alph.assign_rank(rank)),
+                  "The assign_rank() free function can only forward to .assign_rank() member functions that "
+                  "are qualified as \"noexcept\".");
     return std::move(alph.assign_rank(rank));
 }
 //!\}
@@ -162,9 +149,14 @@ struct underlying_char<alphabet_type_with_members>
  * \returns The letter's value in the alphabet's rank type (usually `char`).
  */
 template <typename alphabet_type>
-constexpr underlying_char_t<alphabet_type> to_char(alphabet_type const alph)
+//!\cond
     requires requires (alphabet_type alph) { { alph.to_char() } -> underlying_char_t<alphabet_type>; }
+//!\endcond
+constexpr underlying_char_t<alphabet_type> to_char(alphabet_type const alph) noexcept
 {
+    static_assert(noexcept(alph.to_char()),
+                  "The to_char() free function can only forward to .to_char() member functions that "
+                  "are qualified as \"noexcept\".");
     return alph.to_char();
 }
 
@@ -175,9 +167,14 @@ constexpr underlying_char_t<alphabet_type> to_char(alphabet_type const alph)
  * \returns A reference to the alphabet letter you passed in.
  */
 template <typename alphabet_type>
-constexpr alphabet_type & assign_char(alphabet_type & alph, underlying_char_t<alphabet_type> const chr)
+//!\cond
     requires requires (alphabet_type alph) { { alph.assign_char(char{0}) } -> alphabet_type &; }
+//!\endcond
+constexpr alphabet_type & assign_char(alphabet_type & alph, underlying_char_t<alphabet_type> const chr) noexcept
 {
+    static_assert(noexcept(alph.assign_char(chr)),
+                  "The assign_char() free function can only forward to .assign_char() member functions that "
+                  "are qualified as \"noexcept\".");
     return alph.assign_char(chr);
 }
 
@@ -193,10 +190,57 @@ constexpr alphabet_type & assign_char(alphabet_type & alph, underlying_char_t<al
  * ~~~
  */
 template <typename alphabet_type>
-constexpr alphabet_type && assign_char(alphabet_type && alph, underlying_char_t<alphabet_type> const chr)
+//!\cond
     requires requires (alphabet_type alph) { { alph.assign_char(char{0}) } -> alphabet_type &; }
+//!\endcond
+constexpr alphabet_type assign_char(alphabet_type && alph, underlying_char_t<alphabet_type> const chr) noexcept
 {
+    static_assert(noexcept(alph.assign_char(chr)),
+                  "The assign_char() free function can only forward to .assign_char() member functions that "
+                  "are qualified as \"noexcept\".");
     return std::move(alph.assign_char(chr));
+}
+
+/*!\brief Implementation of seqan3::alphabet_concept::char_is_valid_for() that delegates to a static member function.
+ * \tparam alphabet_type Must provide a `char_is_valid()` static member function.
+ * \param chr The `char` value you wish to check.
+ * \returns `true` or `false`.
+ */
+template <typename alphabet_type_with_members>
+//!\cond
+    requires requires { { std::remove_reference_t<alphabet_type_with_members>::char_is_valid(char{0}) } -> bool; }
+//!\endcond
+constexpr bool char_is_valid_for(underlying_char_t<alphabet_type_with_members> const chr) noexcept
+{
+    return std::remove_reference_t<alphabet_type_with_members>::char_is_valid(chr);
+}
+
+/*!\brief Implementation of seqan3::alphabet_concept::assign_char_strict() that delegates to a member function.
+ * \tparam alphabet_type Must provide an `.assign_char_strict()` member function.
+ * \param alph The alphabet letter that you wish to assign to.
+ * \param chr The `char` value you wish to assign.
+ * \throws seqan3::invalid_char_assignment If seqan3::char_is_valid_for returns `false` for the given character.
+ * \returns A reference to the alphabet letter you passed in.
+ */
+template <typename alphabet_type_with_members>
+//!\cond
+    requires requires (alphabet_type_with_members alph) { { alph.assign_char_strict(char{0}) } -> alphabet_type_with_members &; }
+//!\endcond
+constexpr alphabet_type_with_members & assign_char_strict(alphabet_type_with_members & alph,
+                                                          underlying_char_t<alphabet_type_with_members> const chr)
+{
+    return alph.assign_char_strict(chr);
+}
+
+//!\overload
+template <typename alphabet_type_with_members>
+//!\cond
+    requires requires (alphabet_type_with_members alph) { { alph.assign_char_strict(char{0}) } -> alphabet_type_with_members &; }
+//!\endcond
+constexpr alphabet_type_with_members assign_char_strict(alphabet_type_with_members && alph,
+                                                        underlying_char_t<alphabet_type_with_members> const chr)
+{
+    return std::move(alph.assign_char_strict(chr));
 }
 //!\}
 
@@ -217,8 +261,8 @@ constexpr alphabet_type && assign_char(alphabet_type && alph, underlying_char_t<
  * \returns The letter's complement, e.g. 'T' for 'A'.
  */
 template <typename nucleotide_type>
-constexpr nucleotide_type complement(nucleotide_type const alph)
     requires requires (nucleotide_type alph) { { alph.complement() } -> nucleotide_type; }
+constexpr nucleotide_type complement(nucleotide_type const alph)
 {
     return alph.complement();
 }

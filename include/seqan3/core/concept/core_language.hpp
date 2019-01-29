@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \brief Provides concepts for core language types and relations that don't have concepts in C++20 (yet).
@@ -60,7 +33,7 @@ namespace seqan3::detail
  */
 //!\cond
 template <typename lhs_t, typename rhs_t>
-concept weakly_equality_comparable_by_members_with_concept = requires (lhs_t const & lhs, rhs_t const & rhs)
+SEQAN3_CONCEPT weakly_equality_comparable_by_members_with_concept = requires (lhs_t const & lhs, rhs_t const & rhs)
 {
     lhs.operator==(rhs); std::Boolean<decltype(lhs.operator==(rhs))>;
     lhs.operator!=(rhs); std::Boolean<decltype(lhs.operator!=(rhs))>;
@@ -71,7 +44,7 @@ concept weakly_equality_comparable_by_members_with_concept = requires (lhs_t con
  */
 //!\cond
 template <typename lhs_t, typename rhs_t>
-concept weakly_ordered_by_members_with_concept = requires (lhs_t const & lhs, rhs_t const & rhs)
+SEQAN3_CONCEPT weakly_ordered_by_members_with_concept = requires (lhs_t const & lhs, rhs_t const & rhs)
 {
     lhs.operator< (rhs); std::Boolean<decltype(lhs.operator< (rhs))>;
     lhs.operator> (rhs); std::Boolean<decltype(lhs.operator> (rhs))>;
@@ -85,7 +58,7 @@ concept weakly_ordered_by_members_with_concept = requires (lhs_t const & lhs, rh
  */
 //!\cond
 template <typename source_t, typename target_t>
-concept convertible_to_by_member_concept = requires (source_t s)
+SEQAN3_CONCEPT convertible_to_by_member_concept = requires (source_t s)
 {
     { s.operator target_t() } -> target_t;
 };
@@ -109,7 +82,7 @@ namespace seqan3
  */
 //!\cond
 template <typename t1, typename t2>
-concept weakly_ordered_with_concept = requires (std::remove_reference_t<t1> const & v1,
+SEQAN3_CONCEPT weakly_ordered_with_concept = requires (std::remove_reference_t<t1> const & v1,
                                                      std::remove_reference_t<t2> const & v2)
 {
     { v1 <  v2 } -> bool &&;
@@ -124,7 +97,7 @@ concept weakly_ordered_with_concept = requires (std::remove_reference_t<t1> cons
  */
 //!\cond
 template <typename t, typename u>
-concept implicitly_convertible_to_concept = std::is_convertible_v<t, u>;
+SEQAN3_CONCEPT implicitly_convertible_to_concept = std::is_convertible_v<t, u>;
 //!\endcond
 
 /*!\interface   seqan3::explicitly_convertible_to_concept <>
@@ -132,7 +105,7 @@ concept implicitly_convertible_to_concept = std::is_convertible_v<t, u>;
  */
 //!\cond
 template <typename t, typename u>
-concept explicitly_convertible_to_concept = requires (t vt) { { static_cast<u>(vt)}; };
+SEQAN3_CONCEPT explicitly_convertible_to_concept = requires (t vt) { { static_cast<u>(vt)}; };
 //!\endcond
 
 /*!\interface   seqan3::arithmetic_concept <>
@@ -141,7 +114,7 @@ concept explicitly_convertible_to_concept = requires (t vt) { { static_cast<u>(v
  */
 //!\cond
 template <typename t>
-concept arithmetic_concept = std::is_arithmetic_v<t>;
+SEQAN3_CONCEPT arithmetic_concept = std::is_arithmetic_v<t>;
 //!\endcond
 
 /*!\interface   seqan3::floating_point_concept <>
@@ -151,7 +124,7 @@ concept arithmetic_concept = std::is_arithmetic_v<t>;
  */
 //!\cond
 template <typename t>
-concept floating_point_concept = arithmetic_concept<t> && std::is_floating_point_v<t>;
+SEQAN3_CONCEPT floating_point_concept = arithmetic_concept<t> && std::is_floating_point_v<t>;
 //!\endcond
 
 /*!\interface   seqan3::char_concept <>
@@ -162,7 +135,7 @@ concept floating_point_concept = arithmetic_concept<t> && std::is_floating_point
 //!\cond
 
 template <typename t>
-concept char_concept = std::Integral<t> &&
+SEQAN3_CONCEPT char_concept = std::Integral<t> &&
                        (std::Same<t, char> || std::Same<t, unsigned char> || std::Same<t, signed char> ||
 #ifdef __cpp_char8_t
                         std::Same<t, char8_t> ||
@@ -177,7 +150,7 @@ concept char_concept = std::Integral<t> &&
  */
 //!\cond
 template <typename t>
-concept trivially_destructible_concept = std::Destructible<t> && std::is_trivially_destructible_v<t>;
+SEQAN3_CONCEPT trivially_destructible_concept = std::Destructible<t> && std::is_trivially_destructible_v<t>;
 //!\endcond
 
 /*!\interface   seqan3::trivially_copyable_concept
@@ -187,7 +160,7 @@ concept trivially_destructible_concept = std::Destructible<t> && std::is_trivial
  */
 //!\cond
 template <typename t>
-concept trivially_copyable_concept = std::Copyable<t> && std::is_trivially_copyable_v<t>;
+SEQAN3_CONCEPT trivially_copyable_concept = std::Copyable<t> && std::is_trivially_copyable_v<t>;
 //!\endcond
 
 /*!\interface   seqan3::trivial_concept
@@ -198,7 +171,7 @@ concept trivially_copyable_concept = std::Copyable<t> && std::is_trivially_copya
  */
 //!\cond
 template <typename t>
-concept trivial_concept = trivially_copyable_concept<t> && trivially_destructible_concept<t> && std::is_trivial_v<t>;
+SEQAN3_CONCEPT trivial_concept = trivially_copyable_concept<t> && trivially_destructible_concept<t> && std::is_trivial_v<t>;
 //!\endcond
 
 /*!\interface   seqan3::standard_layout_concept
@@ -207,7 +180,7 @@ concept trivial_concept = trivially_copyable_concept<t> && trivially_destructibl
  */
 //!\cond
 template <typename t>
-concept standard_layout_concept = std::is_standard_layout_v<t>;
+SEQAN3_CONCEPT standard_layout_concept = std::is_standard_layout_v<t>;
 //!\endcond
 
 /*!\interface   seqan3::weakly_assignable_concept
@@ -221,7 +194,7 @@ concept standard_layout_concept = std::is_standard_layout_v<t>;
  */
 //!\cond
 template <typename t, typename u>
-concept weakly_assignable_concept = std::is_assignable_v<t, u>;
+SEQAN3_CONCEPT weakly_assignable_concept = std::is_assignable_v<t, u>;
 //!\endcond
 
 }  // namespace seqan3

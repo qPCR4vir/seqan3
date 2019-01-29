@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Hannes Hauswedell <hannes.hauswedell AT fu-berlin.de>
@@ -75,7 +48,7 @@ using uint_adaptations_char_types = meta::list<char,
 
 //!\brief Metafunction overload for types that are in seqan3::detail::uint_adaptations.
 template <typename type_in_list>
-    requires meta::in<uint_adaptations, type_in_list>::value
+    requires meta::in<uint_adaptations, std::remove_reference_t<type_in_list>>::value
 struct is_uint_adaptation<type_in_list> :
     std::true_type
 {};
@@ -106,7 +79,7 @@ struct underlying_char<uint_type>
 {
     //!\brief The character type of the same size as `uint_type`.
     using type = meta::at<detail::uint_adaptations_char_types,
-                          meta::find_index<detail::uint_adaptations, uint_type>>;
+                          meta::find_index<detail::uint_adaptations, std::remove_reference_t<uint_type>>>;
 };
 
 /*!\brief Specialisation of seqan3::underlying_rank for uint types.
@@ -137,15 +110,10 @@ template <typename uint_type>
 //!\cond
     requires detail::is_uint_adaptation_v<uint_type>
 //!\endcond
-struct alphabet_size<uint_type>
-{
-    //!\brief Smallest unsigned integral type that can hold value;
-    using type = detail::min_viable_uint_t<static_cast<uint64_t>(std::numeric_limits<uint_type>::max()) + 1 -
-                                           std::numeric_limits<uint_type>::lowest()>;
-    //!\brief The alphabet's size.
-    static constexpr type value =
-        static_cast<type>(std::numeric_limits<uint_type>::max()) + 1 - std::numeric_limits<uint_type>::lowest();
-};
+struct alphabet_size<uint_type> :
+    std::integral_constant<detail::min_viable_uint_t<detail::size_in_values_v<uint_type>>,
+                           detail::size_in_values_v<uint_type>>
+{};
 
 // ------------------------------------------------------------------
 // free functions
@@ -163,7 +131,7 @@ struct alphabet_size<uint_type>
  * \returns The letter's value in the alphabet's rank type (usually `uint`).
  */
 template <typename uint_type>
-constexpr underlying_char_t<uint_type> to_char(uint_type const intgr)
+constexpr underlying_char_t<uint_type> to_char(uint_type const intgr) noexcept
     requires detail::is_uint_adaptation_v<uint_type>
 {
     return intgr;
@@ -175,7 +143,7 @@ constexpr underlying_char_t<uint_type> to_char(uint_type const intgr)
  * \returns The letter's value in the alphabet's rank type (usually a `uint*_t`).
  */
 template <typename uint_type>
-constexpr underlying_rank_t<uint_type> to_rank(uint_type const intgr)
+constexpr underlying_rank_t<uint_type> to_rank(uint_type const intgr) noexcept
     requires detail::is_uint_adaptation_v<uint_type>
 {
     return intgr;
@@ -188,26 +156,42 @@ constexpr underlying_rank_t<uint_type> to_rank(uint_type const intgr)
  * \returns A reference to the alphabet letter you passed in.
  */
 template <typename uint_type>
-constexpr uint_type & assign_char(uint_type & intgr, underlying_char_t<uint_type> const chr)
+constexpr uint_type & assign_char(uint_type & intgr, underlying_char_t<uint_type> const chr) noexcept
     requires detail::is_uint_adaptation_v<uint_type>
 {
     return intgr = chr;
 }
 
-/*!\brief Assign from a character type via implicit or explicit cast.
- * \tparam uint_type One of `uint8_t`, `uint16_t` or `uint32_t`.
- * \param intgr An alphabet letter temporary.
- * \param chr The `char` value you wish to assign.
- * \returns The assignment result as a temporary.
- * \details
- * Use this e.g. to newly create alphabet letters from uint:
- * \snippet test/snippet/alphabet/adaptation/uint.cpp assign_char
- */
+//!\overload
 template <typename uint_type>
-constexpr uint_type && assign_char(uint_type && intgr, underlying_char_t<uint_type> const chr)
-    requires detail::is_uint_adaptation_v<std::remove_reference_t<uint_type>>
+constexpr uint_type assign_char(uint_type &&, underlying_char_t<uint_type> const chr) noexcept
+    requires detail::is_uint_adaptation_v<uint_type>
 {
-    return std::move(intgr = chr);
+    return chr;
+}
+
+//!\brief For adaptations seqan3::assign_char_strict behaves exactly as seqan3::assign_char.
+template <typename uint_type>
+constexpr uint_type & assign_char_strict(uint_type & intgr, underlying_char_t<uint_type> const chr) noexcept
+    requires detail::is_uint_adaptation_v<uint_type>
+{
+    return intgr = chr;
+}
+
+//!\overload
+template <typename uint_type>
+constexpr uint_type assign_char_strict(uint_type &&, underlying_char_t<uint_type> const chr) noexcept
+    requires detail::is_uint_adaptation_v<uint_type>
+{
+    return chr;
+}
+
+//!\brief For char adaptations, all character values are valid.
+template <typename uint_type>
+constexpr bool char_is_valid_for(underlying_char_t<uint_type> const) noexcept
+    requires detail::is_uint_adaptation_v<uint_type>
+{
+    return true;
 }
 
 /*!\brief Assign a rank to to the uint (same as calling `=`).
@@ -217,26 +201,18 @@ constexpr uint_type && assign_char(uint_type && intgr, underlying_char_t<uint_ty
  * \returns A reference to the alphabet letter you passed in.
  */
 template <typename uint_type>
-constexpr uint_type & assign_rank(uint_type & intgr, underlying_rank_t<uint_type> const intgr2)
+constexpr uint_type & assign_rank(uint_type & intgr, underlying_rank_t<uint_type> const intgr2) noexcept
     requires detail::is_uint_adaptation_v<uint_type>
 {
     return intgr = intgr2;
 }
 
-/*!\brief Assign a rank to to the uint (same as calling `=`).
- * \tparam uint_type One of `uint8_t`, `uint16_t` or `uint32_t`.
- * \param intgr An alphabet letter temporary.
- * \param intgr2 The `rank` value you wish to assign.
- * \returns The assignment result as a temporary.
- * \details
- * Use this e.g. to newly create alphabet letters from rank:
- * \snippet test/snippet/alphabet/adaptation/uint.cpp assign_rank
- */
+//!\overload
 template <typename uint_type>
-constexpr uint_type && assign_rank(uint_type && intgr, underlying_rank_t<uint_type> const intgr2)
-    requires detail::is_uint_adaptation_v<std::remove_reference_t<uint_type>>
+constexpr uint_type assign_rank(uint_type &&, underlying_rank_t<uint_type> const intgr2) noexcept
+    requires detail::is_uint_adaptation_v<uint_type>
 {
-    return std::move(intgr = intgr2);
+    return intgr2;
 }
 //!\}
 //!\}

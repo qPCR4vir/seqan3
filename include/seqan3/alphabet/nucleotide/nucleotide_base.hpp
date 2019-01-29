@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (chr) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (chr) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Hannes Hauswedell <hannes.hauswedell AT fu-berlin.de>
@@ -42,6 +15,7 @@
 #include <seqan3/alphabet/detail/alphabet_base.hpp>
 #include <seqan3/alphabet/detail/convert.hpp>
 #include <seqan3/alphabet/nucleotide/concept.hpp>
+#include <seqan3/io/stream/char_operations.hpp>
 
 namespace seqan3
 {
@@ -56,7 +30,8 @@ namespace seqan3
  * You can use this class to define your own nucleotide alphabet, but types are not required to be based on it to model
  * seqan3::nucleotide_concept, it is purely a way to avoid code duplication.
  *
- * The derived type needs to define only the following table as static member variable:
+ * In addition to the requirements of seqan3::alphabet_base, the derived type needs to define the following static
+ * member variable (can be private):
  *
  *   * `static std::array<THAT_TYPE, value_size> complement_table` that defines for every possible rank value
  *     the corresponding complement.
@@ -133,6 +108,56 @@ public:
         return derived_type::complement_table[to_rank()];
     }
     //!\}
+
+    /*!\brief Validate whether a character value has a one-to-one mapping to an alphabet value.
+     *
+     * \details
+     *
+     * Satisfies the seqan3::semi_alphabet_concept::char_is_valid_for() requirement via the seqan3::char_is_valid_for()
+     * wrapper.
+     *
+     * Behaviour specific to nucleotides: True also for lower case letters that silently convert to their upper case
+     * **and** true also for U/T respectively, e.g. 'U' is a valid character for seqan3::dna4, because its informational
+     * content is identical to 'T'.
+     *
+     * \par Complexity
+     *
+     * Constant.
+     *
+     * \par Exceptions
+     *
+     * Guaranteed not to throw.
+     */
+    static constexpr bool char_is_valid(char_type const c) noexcept
+    {
+        return valid_char_table[static_cast<uint8_t>(c)];
+    }
+
+private:
+    //!\brief Implementation of #char_is_valid().
+    static constexpr std::array<bool, 256> valid_char_table
+    {
+        [] () constexpr
+        {
+            // init with false
+            std::array<bool, 256> ret{};
+
+            // the original valid chars and their lower cases
+            for (uint8_t c : derived_type::rank_to_char)
+            {
+                ret[         c ] = true;
+                ret[to_lower(c)] = true;
+            }
+
+            // U and T shall be accepted for all
+            ret['U'] = true;
+            ret['T'] = true;
+            ret['u'] = true;
+            ret['t'] = true;
+
+            return ret;
+        }()
+    };
 };
 
 } // namespace seqan3

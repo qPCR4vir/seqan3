@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------------------------------
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
 // This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
 // -----------------------------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ TEST(translation, translate_triplets)
     dna15 n1{'C'_dna15};
     dna15 n2{'T'_dna15};
     dna15 n3{'A'_dna15};
-    aa27 c{aa27::L};
+    aa27 c{'L'_aa27};
 
     // Nucleotide interface
     aa27 t1{translate_triplet<genetic_code::CANONICAL, dna15>(n1, n2, n3)};

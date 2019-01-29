@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Hannes Hauswedell <hannes.hauswedell AT fu-berlin.de>
@@ -41,6 +14,7 @@
 
 #include <ios>
 #include <ostream>
+#include <variant>
 
 #include <seqan3/alphabet/concept.hpp>
 #include <seqan3/alphabet/adaptation/uint.hpp>
@@ -314,7 +288,7 @@ void print_tuple(debug_stream_type & s, tuple_t && t, std::index_sequence<I...> 
 
 namespace seqan3
 {
-    
+
 /*!\brief All tuples can be printed by printing their elements separately.
  * \tparam tuple_t Type of the tuple to be printed; must model seqan3::tuple_like_concept.
  * \param s The seqan3::debug_stream.
@@ -331,6 +305,27 @@ inline debug_stream_type & operator<<(debug_stream_type & s, tuple_t && t)
 {
     detail::print_tuple(s, std::forward<tuple_t>(t),
                         std::make_index_sequence<std::tuple_size_v<remove_cvref_t<tuple_t>>>{});
+    return s;
+}
+
+/*!\brief A std::variant can be printed by visiting the stream operator for the corresponding type.
+ * \tparam    variant_type The underlying type of the variant.
+ * \param[in] s            The seqan3::debug_stream.
+ * \param[in] v            The variant.
+ * \relates seqan3::debug_stream_type
+ *
+ * \details
+ *
+ * Note that in case the variant is valueless(_by_exception), nothing is printed.
+ */
+template <typename variant_type>
+//!\cond
+    requires detail::is_type_specialisation_of_v<remove_cvref_t<variant_type>, std::variant>
+//!\endcond
+inline debug_stream_type & operator<<(debug_stream_type & s, variant_type && v)
+{
+    if (!v.valueless_by_exception())
+        std::visit([&s](auto&& arg){s << arg;}, v);
     return s;
 }
 

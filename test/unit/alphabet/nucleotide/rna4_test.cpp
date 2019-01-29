@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------------------------------
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
 // This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
 // -----------------------------------------------------------------------------------------------------
@@ -69,4 +69,12 @@ TEST(rna4, string_literal)
 
     std::vector<rna4> w{'A'_rna4, 'C'_rna4, 'G'_rna4, 'T'_rna4, 'U'_rna4, 'N'_rna4};
     EXPECT_EQ(w, "ACGUUA"_rna4);
+}
+
+TEST(rna4, char_is_valid)
+{
+    constexpr auto validator = is_char<'A'> || is_char<'C'> || is_char<'G'> || is_char<'T'> || is_char<'U'>
+                            || is_char<'a'> || is_char<'c'> || is_char<'g'> || is_char<'t'> || is_char<'u'>;
+    for (char c : ranges::view::iota(std::numeric_limits<char>::min(), std::numeric_limits<char>::max()))
+        EXPECT_EQ(rna4::char_is_valid(c), validator(c));
 }

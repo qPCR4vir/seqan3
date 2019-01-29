@@ -1,36 +1,9 @@
-// ==========================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ==========================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert, FU Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ==========================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
 
@@ -67,6 +40,16 @@ TYPED_TEST(integral_from_char_test, postive_number)
 
         EXPECT_EQ(value, TypeParam{23});
         EXPECT_EQ(res.ptr, &str[0] + str.size());
+        EXPECT_EQ(res.ec, std::errc{});
+    }
+
+    // Read only up to a certain point
+    {
+        std::vector<char> const str{'0', '2', '3', '4', '5', '6'};
+        auto res = std::from_chars(&str[0], &str[0] + 3, value);
+
+        EXPECT_EQ(value, TypeParam{23});
+        EXPECT_EQ(res.ptr, &str[0] + 3);
         EXPECT_EQ(res.ec, std::errc{});
     }
 }
@@ -258,11 +241,6 @@ using real_types = ::testing::Types<float, double, long double>;
 
 TYPED_TEST_CASE(from_char_real_test, real_types);
 
-bool double_equals(double a, double b, double epsilon = 0.00001)
-{
-    return std::abs(a - b) < epsilon;
-}
-
 TYPED_TEST(from_char_real_test, real_numbers)
 {
     std::setlocale(LC_NUMERIC, "C");
@@ -270,104 +248,127 @@ TYPED_TEST(from_char_real_test, real_numbers)
         TypeParam val{};
         std::string str = "1234";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{1234});
+        EXPECT_FLOAT_EQ(val, TypeParam{1234});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = "1.2e3";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{1200});
+        EXPECT_FLOAT_EQ(val, TypeParam{1200});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = "1.2e-3";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_TRUE(double_equals(val, TypeParam{0.0012}));
+        EXPECT_FLOAT_EQ(val, TypeParam{0.0012});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = "1.e2";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{100});
+        EXPECT_FLOAT_EQ(val, TypeParam{100});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = "1.";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{1});
+        EXPECT_FLOAT_EQ(val, TypeParam{1});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = ".2e3";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{200});
+        EXPECT_FLOAT_EQ(val, TypeParam{200});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = "2e3";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{2000});
+        EXPECT_FLOAT_EQ(val, TypeParam{2000});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = "2";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{2});
+        EXPECT_FLOAT_EQ(val, TypeParam{2});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = "4em";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{4});
+        EXPECT_FLOAT_EQ(val, TypeParam{4});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{};
         std::string str = "-1.2e3";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{-1200});
+        EXPECT_FLOAT_EQ(val, TypeParam{-1200});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{42};
         std::string str = "-.3";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_TRUE(double_equals(val, TypeParam{-0.3}));
+        EXPECT_FLOAT_EQ(val, TypeParam{-0.3});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{42};
         std::string str = "1.2e";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_TRUE(double_equals(val, TypeParam{1.2}));
+        EXPECT_FLOAT_EQ(val, TypeParam{1.2});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
         TypeParam val{42};
         std::string str = "0.0";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{0});
+        EXPECT_FLOAT_EQ(val, TypeParam{0});
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
+    }
+
+    // Read only until a certain position
+    {
+        TypeParam val{42};
+        std::string str = "3.194357";
+        auto res = std::from_chars(&str[0], &str[0] + 4, val);
+        EXPECT_FLOAT_EQ(val, TypeParam{3.19});
+        EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + 4);
     }
 }
 
@@ -379,6 +380,7 @@ TYPED_TEST(from_char_real_test, infinity_value)
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
         EXPECT_EQ(val, std::numeric_limits<TypeParam>::infinity());
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
@@ -387,6 +389,7 @@ TYPED_TEST(from_char_real_test, infinity_value)
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
         EXPECT_EQ(val, std::numeric_limits<TypeParam>::infinity());
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
@@ -395,6 +398,7 @@ TYPED_TEST(from_char_real_test, infinity_value)
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
         EXPECT_EQ(val, std::numeric_limits<TypeParam>::infinity());
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
@@ -403,6 +407,7 @@ TYPED_TEST(from_char_real_test, infinity_value)
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
         EXPECT_EQ(val, std::numeric_limits<TypeParam>::infinity());
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
 }
@@ -419,6 +424,7 @@ TYPED_TEST(from_char_real_test, nan_value)
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
         EXPECT_TRUE(std::isnan(val));
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
@@ -427,6 +433,7 @@ TYPED_TEST(from_char_real_test, nan_value)
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
         EXPECT_TRUE(std::isnan(val));
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
@@ -435,6 +442,7 @@ TYPED_TEST(from_char_real_test, nan_value)
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
         EXPECT_TRUE(std::isnan(val));
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 
     {
@@ -443,6 +451,7 @@ TYPED_TEST(from_char_real_test, nan_value)
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
         EXPECT_TRUE(std::isnan(val));
         EXPECT_EQ(res.ec, std::errc{});
+        EXPECT_EQ(res.ptr, &str[0] + str.size());
     }
 }
 
@@ -452,7 +461,7 @@ TYPED_TEST(from_char_real_test, non_valid_strings)
         TypeParam val{42};
         std::string str = "e3";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{42});
+        EXPECT_FLOAT_EQ(val, TypeParam{42});
         EXPECT_EQ(res.ec, std::errc::invalid_argument);
     }
 
@@ -460,7 +469,7 @@ TYPED_TEST(from_char_real_test, non_valid_strings)
         TypeParam val{42};
         std::string str = "+1.2e3";
         auto res = std::from_chars(&str[0], &str[0] + str.size(), val);
-        EXPECT_EQ(val, TypeParam{42});
+        EXPECT_FLOAT_EQ(val, TypeParam{42});
         EXPECT_EQ(res.ec, std::errc::invalid_argument);
     }
 }

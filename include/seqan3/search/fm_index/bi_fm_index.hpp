@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Christopher Pockrandt <christopher.pockrandt AT fu-berlin.de>
@@ -43,6 +16,7 @@
 
 #include <seqan3/core/metafunction/range.hpp>
 #include <seqan3/io/filesystem.hpp>
+#include <seqan3/range/view/persist.hpp>
 #include <seqan3/search/fm_index/fm_index.hpp>
 #include <seqan3/search/fm_index/bi_fm_index_cursor.hpp>
 #include <seqan3/std/view/reverse.hpp>
@@ -94,13 +68,22 @@ protected:
 
 public:
 
+    static_assert(dimension_v<text_t> == 1 || dimension_v<text_t> == 2,
+                  "Only texts or collections of texts can be indexed.");
+
+    //!\brief Indicates whether index is built over a collection.
+    static bool constexpr is_collection = dimension_v<text_t> == 2;
+
     /*!\name Text types
      * \{
      */
     //!\brief The type of the forward indexed text.
     using text_type = text_t;
     //!\brief The type of the forward indexed text.
-    using rev_text_type = decltype(view::reverse(*text));
+    using rev_text_type = std::conditional_t<is_collection,
+                                             decltype(*text | view::deep{view::reverse} | view::deep{view::persist}
+                                                            | view::reverse),
+                                             decltype(*text | view::reverse)>;
     //!\}
 
 protected:
@@ -119,6 +102,9 @@ protected:
      *        in case not all possible characters occur in the indexed text.)
      */
     using sdsl_char_type = typename sdsl_index_type::alphabet_type::char_type;
+
+    //!\brief The type of the alphabet size of the underlying SDSL index.
+    using sdsl_sigma_type = typename sdsl_index_type::alphabet_type::sigma_type;
 
     //!\brief The type of the underlying FM index for the original text.
     using fm_index_type = fm_index<text_t, typename index_traits_t::fm_index_traits>;
@@ -218,11 +204,14 @@ public:
     void construct(text_t const & text)
     {
          // text must not be empty
-        if (text.begin() == text.end())
+        if (std::ranges::begin(text) == std::ranges::end(text))
             throw std::invalid_argument("The text that is indexed cannot be empty.");
 
         this->text = &text;
-        rev_text = view::reverse(text);
+        if constexpr(is_collection)
+            rev_text = text | view::deep{view::reverse} | view::deep{view::persist} | view::reverse;
+        else
+            rev_text = view::reverse(text);
         fwd_fm.construct(text);
         rev_fm.construct(rev_text);
 
@@ -288,9 +277,9 @@ public:
     // }
 
     /*!\brief Returns a seqan3::bi_fm_index_cursor on the index that can be used for searching.
-     *        \cond DEV
+     *        \if DEV
      *            Cursor is pointing to the root node of the implicit affix tree.
-     *        \endcond
+     *        \endif
      * \returns Returns a bidirectional seqan3::bi_fm_index_cursor on the index.
      *
      * ### Complexity
@@ -326,6 +315,7 @@ public:
     /*!\brief Returns a unidirectional seqan3::fm_index_cursor on the reversed text of the bidirectional index that
      *        can be used for searching. Note that because of the text being reversed, extend_right() resp. cycle_back()
      *        correspond to extend_left() resp. cycle_front() on the bidirectional index cursor.
+     * \attention For text collections the text IDs are also reversed.
      * \returns Returns a unidirectional seqan3::fm_index_cursor on the index of the reversed text.
      *
      * ### Complexity

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------------------------------
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
 // This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
 // -----------------------------------------------------------------------------------------------------
@@ -59,8 +59,8 @@ TEST(union_composition_test, initialise_from_component_alphabet)
     variant_t variant8 = static_cast<variant_t>('T'_dna5);
     alphabet_t letter8 = static_cast<alphabet_t>('T'_dna5);
 
-    variant_t variant9 = {static_cast<variant_t>(gap::GAP)};
-    alphabet_t letter9 = {static_cast<alphabet_t>(gap::GAP)};
+    variant_t variant9 = {static_cast<variant_t>(gap{})};
+    alphabet_t letter9 = {static_cast<alphabet_t>(gap{})};
 
     EXPECT_EQ(letter0.to_rank(), 0);
     EXPECT_EQ(letter1.to_rank(), 1);
@@ -158,7 +158,7 @@ TEST(union_composition_test, assign_from_component_alphabet)
     letter = 'T'_dna5;
     EXPECT_EQ(letter.to_rank(), 8);
 
-    letter = gap::GAP;
+    letter = gap{};
     EXPECT_EQ(letter.to_rank(), 9);
 }
 
@@ -281,10 +281,10 @@ TEST(union_composition_test, convert_by_index)
     dna5 out = u.convert_to<1>();
     EXPECT_EQ(out, 'C'_dna5);
 
-    u = gap::GAP;
+    u = gap{};
 
     gap g = u.convert_unsafely_to<2>();
-    EXPECT_EQ(g, gap::GAP);
+    EXPECT_EQ(g, gap{});
 }
 
 TEST(union_composition_test, convert_by_type)
@@ -303,7 +303,7 @@ TEST(union_composition_test, convert_by_type)
     dna5 out = u.convert_to<dna5>();
     EXPECT_EQ(out, 'C'_dna5);
 
-    u = gap::GAP;
+    u = gap{};
     gap g = u.convert_unsafely_to<gap>();
-    EXPECT_EQ(g, gap::GAP);
+    EXPECT_EQ(g, gap{});
 }

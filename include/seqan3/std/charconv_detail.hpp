@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 // ============================================================================
 // LLVM Release License
@@ -80,13 +53,14 @@
 
 #pragma once
 
-#include <cstdlib>
-#include <type_traits>
-#include <limits>
-#include <cstdint>
-#include <cstring>
-#include <cmath>
+#include <algorithm>
 #include <cerrno>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
+#include <type_traits>
 
 #include <seqan3/core/concept/core_language.hpp>
 #include <seqan3/io/stream/parse_condition.hpp>
@@ -725,10 +699,8 @@ inline std::from_chars_result from_chars_floating_point(char const * first,
         return {last, std::errc::invalid_argument};
 
     float tmp{};
-    ptrdiff_t constexpr buffer_size = 10000;
-    char hex_buffer[buffer_size];
-    char * start;
-    char * end;
+    ptrdiff_t constexpr buffer_size = 100;
+    char buffer[buffer_size];
 
     if (fmt != std::chars_format::general)
     {
@@ -751,28 +723,42 @@ inline std::from_chars_result from_chars_floating_point(char const * first,
             return {last, std::errc::invalid_argument};
     }
 
-    // If hex format is explicitly expected, the 0x prefix is not allowed in the
-    // the original sequence according to the std::from_chars cppreference
-    // documentation.
-    // In order to use strto[f/d/ld], the prefix must be prepended to achieve
-    // correct parsing. This will also automatically lead to an error if the
-    // original sequence did contain a 0x prefix and thus reflect the correct
-    // requirements of std::from_chars.
-    if (fmt == std::chars_format::hex)
-    {
-        hex_buffer[0] = '0';
-        hex_buffer[1] = 'x';
-        for (unsigned i = 0; i < std::min(buffer_size - 2, last - first); ++i)
-            hex_buffer[i+2] = first[i];
 
-        start = &hex_buffer[0];
-        end = &hex_buffer[0] + sizeof(hex_buffer);
+    // In contrast to std::from_chars, std::strto[f/d/ld] does not treat the second
+    // parameter (str_end) as "end of the sequence to parse" but merely as an out
+    // parameter to indicate where the parsing ended. Therefore, if [last] does
+    // not point to the end of a null-terminated string, a buffer is needed to
+    // represent the truncated sequence and ensure correct from_chars functionality.
+    char * start;
+
+    if ((*last != '\0' ) || fmt == std::chars_format::hex)
+    {
+        // If hex format is explicitly expected, the 0x prefix is not allowed in the
+        // the original sequence according to the std::from_chars cppreference
+        // documentation.
+        // In order to use strto[f/d/ld], the prefix must be prepended to achieve
+        // correct parsing. This will also automatically lead to an error if the
+        // original sequence did contain a 0x prefix and thus reflect the correct
+        // requirements of std::from_chars.
+        ptrdiff_t offset{0};
+        if (fmt == std::chars_format::hex)
+        {
+            buffer[0] = '0';
+            buffer[1] = 'x';
+            offset = 2;
+        }
+
+        std::copy(first, last, &buffer[offset]);
+        buffer[std::min<ptrdiff_t>(buffer_size - offset, last - first)] = '\0';
+
+        start = &buffer[0];
     }
     else
     {
         start = const_cast<char *>(first);
-        end = const_cast<char *>(last);
     }
+
+    char * end;
 
     if constexpr (std::Same<std::remove_reference_t<value_type>, float>)
     {
@@ -791,7 +777,7 @@ inline std::from_chars_result from_chars_floating_point(char const * first,
     {
         return {last, std::errc::result_out_of_range};
     }
-    else if (tmp == 0 && end == first)
+    else if (tmp == 0 && end == start)
     {
         return {last, std::errc::invalid_argument};
     }

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------------------------------
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
 // This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
 // -----------------------------------------------------------------------------------------------------
@@ -32,7 +32,9 @@ TYPED_TEST_CASE_P(alphabet_constexpr);
 
 TYPED_TEST_P(alphabet_constexpr, concept_check)
 {
-    EXPECT_TRUE(detail::constexpr_alphabet_concept<TypeParam>);
+    EXPECT_TRUE(detail::constexpr_alphabet_concept<TypeParam   >);
+    EXPECT_TRUE(detail::constexpr_alphabet_concept<TypeParam & >);
+    EXPECT_TRUE(detail::constexpr_alphabet_concept<TypeParam &&>);
 }
 
 TYPED_TEST_P(alphabet_constexpr, default_value_constructor)

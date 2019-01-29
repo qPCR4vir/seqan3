@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Christopher Pockrandt <christopher.pockrandt AT fu-berlin.de>
@@ -45,6 +18,7 @@
 #include <sdsl/suffix_trees.hpp>
 
 #include <range/v3/view/iota.hpp>
+#include <range/v3/view/join.hpp>
 #include <range/v3/view/slice.hpp>
 
 #include <seqan3/alphabet/all.hpp>
@@ -52,6 +26,7 @@
 #include <seqan3/search/fm_index/detail/csa_alphabet_strategy.hpp>
 #include <seqan3/search/fm_index/detail/fm_index_cursor.hpp>
 #include <seqan3/search/fm_index/fm_index.hpp>
+#include <seqan3/std/view/filter.hpp>
 #include <seqan3/std/view/transform.hpp>
 
 // namespace seqan3::detail
@@ -77,12 +52,12 @@ namespace seqan3
  * the operation was successful or not. In case of an unsuccessful operation the cursor remains unmodified, i.e. an
  * cursor can never be in an invalid state except default constructed cursors that are always invalid.
  *
- * \cond DEV
+ * \if DEV
  *     The behaviour is equivalent to a suffix tree with the space and time efficiency of the underlying pure FM index.
  *     The cursor traverses the implicit suffix tree beginning at the root node.
  *     The implicit suffix tree is not compacted, i.e. going down an edge using extend_right(char) will increase the
  *     query by only one character.
- * \endcond
+ * \endif
  *
  * The asymptotic running times for using the cursor depend on the SDSL index configuration. To determine the exact
  * running times, you have to additionally look up the running times of the used traits (configuration).
@@ -112,6 +87,8 @@ protected:
     using node_type = detail::fm_index_cursor_node<index_t>;
     //!\brief Type of the representation of characters in the underlying SDSL index.
     using sdsl_char_type = typename index_type::sdsl_char_type;
+    //!\brief Type of the alphabet size in the underlying SDSL index.
+    using sdsl_sigma_type = typename index_type::sdsl_sigma_type;
     //!\}
 
     //!\brief Underlying FM index.
@@ -122,6 +99,11 @@ protected:
     size_type parent_rb;
     //!\brief Underlying index from the SDSL.
     node_type node;
+    //!\brief Alphabet size of the index without delimiters
+    sdsl_sigma_type sigma;
+
+    //!\brief Indicates whether index is built over a collection
+    static bool constexpr is_collection = dimension_v<typename index_type::text_type> == 2;
 
     template <typename _index_t>
     friend class bi_fm_index_cursor;
@@ -181,14 +163,15 @@ public:
      */
     //!\brief Default constructor. Accessing member functions on a default constructed object is undefined behavior.
     //        Default construction is necessary to make this class semi-regular and e.g., to allow construction of
-    //        std::array of cursors.
+    //        std::array of iterators.
     fm_index_cursor() noexcept = default;
     fm_index_cursor(fm_index_cursor const &) noexcept = default;
     fm_index_cursor & operator=(fm_index_cursor const &) noexcept = default;
     fm_index_cursor(fm_index_cursor &&) noexcept = default;
     fm_index_cursor & operator=(fm_index_cursor &&) noexcept = default;
 
-    fm_index_cursor(index_t const & _index) noexcept : index(&_index), node({0, _index.index.size() - 1, 0, 0})
+    fm_index_cursor(index_t const & _index) noexcept : index(&_index), node({0, _index.index.size() - 1, 0, 0}),
+                                                       sigma(_index.index.sigma - is_collection)
     {}
     //\}
 
@@ -235,9 +218,9 @@ public:
 
     /*!\brief Tries to extend the query by the smallest possible character to the right such that the query is found in
      *        the text.
-     *        \cond DEV
+     *        \if DEV
      *            Goes down the leftmost (i.e. lexicographically smallest) edge.
-     *        \endcond
+     *        \endif
      * \returns `true` if the cursor could extend the query successfully.
      *
      * ### Complexity
@@ -258,12 +241,12 @@ public:
 
         sdsl_char_type c = 1; // NOTE: start with 0 or 1 depending on implicit_sentintel
         size_type _lb = node.lb, _rb = node.rb;
-        while (c < index->index.sigma && !backward_search(index->index, index->index.comp2char[c], _lb, _rb))
+        while (c < sigma && !backward_search(index->index, index->index.comp2char[c], _lb, _rb))
         {
             ++c;
         }
 
-        if (c != index->index.sigma)
+        if (c != sigma)
         {
             parent_lb = node.lb;
             parent_rb = node.rb;
@@ -359,12 +342,12 @@ public:
 
     /*!\brief Tries to replace the rightmost character of the query by the next lexicographically larger character such
      *        that the query is found in the text.
-     *        \cond DEV
+     *        \if DEV
      *            Moves the cursor to the right sibling of the current suffix tree node. It would be equivalent to
      *            going up an edge and going down that edge with the smallest character that is larger than the
      *            previous searched character. Calling cycle_back() on an cursor pointing to the root node is
      *            undefined behaviour!
-     *        \endcond
+     *        \endif
      * \returns `true` if there exists a query in the text where the rightmost character of the query is
      *          lexicographically larger than the current rightmost character of the query.
      *
@@ -392,12 +375,12 @@ public:
         sdsl_char_type c = node.last_char + 1;
         size_type _lb = parent_lb, _rb = parent_rb;
 
-        while (c < index->index.sigma && !backward_search(index->index, index->index.comp2char[c], _lb, _rb))
+        while (c < sigma && !backward_search(index->index, index->index.comp2char[c], _lb, _rb))
         {
             ++c;
         }
 
-        if (c != index->index.sigma)
+        if (c != sigma) // Collection has additional sentinel as delimiter
         {
             node = {_lb, _rb, node.depth, c};
             return true;
@@ -431,9 +414,9 @@ public:
     }
 
     /*!\brief Returns the length of the searched query.
-     *        \cond DEV
+     *        \if DEV
      *            Returns the depth of the cursor node in the implicit suffix tree.
-     *        \endcond
+     *        \endif
      * \returns Length of query.
      *
      * ### Complexity
@@ -453,9 +436,9 @@ public:
     }
 
     /*!\brief Returns the searched query.
-     *        \cond DEV
+     *        \if DEV
      *            Returns the concatenation of all edges from the root node to the cursors current node.
-     *        \endcond
+     *        \endif
      * \returns Searched query.
      *
      * ### Complexity
@@ -467,11 +450,27 @@ public:
      * No-throw guarantee.
      */
     auto query() const noexcept
+    //!\cond
+        requires !is_collection
+    //!\endcond
     {
         assert(index != nullptr && index->text != nullptr);
 
         size_type const query_begin = offset() - index->index[node.lb];
         return *index->text | ranges::view::slice(query_begin, query_begin + query_length());
+    }
+
+    //!\overload
+    auto query() const noexcept
+    //!\cond
+        requires is_collection
+    //!\endcond
+    {
+        assert(index != nullptr && index->text != nullptr);
+
+        size_type const loc = offset() - index->index[node.lb];
+        size_type const query_begin = loc - index->text_begin_rs.rank(loc + 1) + 1; // Substract delimiters
+        return *index->text | ranges::view::join | ranges::view::slice(query_begin, query_begin + query_length());
     }
 
     //!\copydoc query()
@@ -512,6 +511,9 @@ public:
      * Strong exception guarantee (no data is modified in case an exception is thrown).
      */
     std::vector<size_type> locate() const
+    //!\cond
+        requires !is_collection
+    //!\endcond
     {
         assert(index != nullptr);
 
@@ -519,6 +521,26 @@ public:
         for (size_type i = 0; i < occ.size(); ++i)
         {
             occ[i] = offset() - index->index[node.lb + i];
+        }
+        return occ;
+    }
+
+    //!\overload
+    std::vector<std::pair<size_type, size_type>> locate() const
+    //!\cond
+        requires is_collection
+    //!\endcond
+    {
+        assert(index != nullptr);
+
+        std::vector<std::pair<size_type, size_type>> occ;
+        occ.reserve(count());
+        for (size_type i = 0; i < count(); ++i)
+        {
+            size_type loc = offset() - index->index[node.lb + i];
+            size_type sequence_rank = index->text_begin_rs.rank(loc + 1);
+            size_type sequence_position = loc - index->text_begin_ss.select(sequence_rank);
+            occ.emplace_back(sequence_rank - 1, sequence_position);
         }
         return occ;
     }
@@ -536,11 +558,32 @@ public:
      * Strong exception guarantee (no data is modified in case an exception is thrown).
      */
     auto lazy_locate() const
+    //!\cond
+        requires !is_collection
+    //!\endcond
     {
         assert(index != nullptr);
 
         return ranges::view::iota(node.lb, node.lb + count())
                | view::transform([*this, _offset = offset()] (auto sa_pos) { return _offset - index->index[sa_pos]; });
+    }
+
+    //!\overload
+    auto lazy_locate() const
+    //!\cond
+        requires is_collection
+    //!\endcond
+    {
+        assert(index != nullptr);
+
+        return ranges::view::iota(node.lb, node.lb + count())
+               | view::transform([*this, _offset = offset()] (auto sa_pos) { return _offset - index->index[sa_pos]; })
+               | view::transform([*this] (auto loc)
+               {
+                   size_type sequence_rank = index->text_begin_rs.rank(loc + 1);
+                   size_type sequence_position = loc - index->text_begin_ss.select(sequence_rank);
+                   return std::make_pair(sequence_rank-1, sequence_position);
+               });
     }
 
 };

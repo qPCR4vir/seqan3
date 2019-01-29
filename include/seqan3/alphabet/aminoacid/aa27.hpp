@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Sara Hetzel <sara.hetzel AT fu-berlin.de>
@@ -42,6 +15,7 @@
 #include <vector>
 
 #include <seqan3/alphabet/aminoacid/aminoacid_base.hpp>
+#include <seqan3/alphabet/aminoacid/concept.hpp>
 #include <seqan3/io/stream/char_operations.hpp>
 
 namespace seqan3
@@ -149,6 +123,20 @@ protected:
 } // namespace seqan3
 
 // ------------------------------------------------------------------
+// metafunctions
+// ------------------------------------------------------------------
+
+namespace seqan3
+{
+
+//!\brief Helper metafunction that identifies aa27 as an amino acid alphabet.
+//!\ingroup aminoacid
+template <>
+struct is_aminoacid<aa27> : std::true_type {};
+
+} // namespace seqan3
+
+// ------------------------------------------------------------------
 // containers
 // ------------------------------------------------------------------
 
@@ -167,7 +155,26 @@ using aa27_vector = std::vector<aa27>;
 namespace seqan3
 {
 
-/*!\brief aa27 literal
+/*!\name Literals
+ * \{
+ */
+
+/*!\brief The seqan3::aa27 char literal.
+ * \param[in] c The character to assign.
+ * \relates seqan3::aa27
+ * \returns seqan3::aa27
+ *
+ * \snippet test/snippet/alphabet/aminoacid/aa27.cpp char_literal
+ *
+ */
+constexpr aa27 operator""_aa27(char const c) noexcept
+{
+    return aa27{}.assign_char(c);
+}
+
+/*!\brief The seqan3::aa27 string literal.
+ * \param[in] s A pointer to the character string to assign.
+ * \param[in] n The size of the character string to assign.
  * \relates seqan3::aa27
  * \returns seqan3::aa27_vector
  *
@@ -189,5 +196,6 @@ inline aa27_vector operator""_aa27(const char * s, std::size_t n)
 
     return r;
 }
+//!\}
 
 } // namespace seqan3

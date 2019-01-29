@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \brief Includes the aligned_sequence_concept and the related insert_gap and
@@ -146,7 +119,7 @@ namespace seqan3
 //!\}
 //!\cond
 template <typename t>
-concept aligned_sequence_concept =
+SEQAN3_CONCEPT aligned_sequence_concept =
     std::ranges::ForwardRange<t> &&
     alphabet_concept<value_type_t<t>> &&
     weakly_assignable_concept<reference_t<t>, gap const &> &&
@@ -190,7 +163,7 @@ template <sequence_container_concept seq_type>
 //!\endcond
 inline typename seq_type::iterator insert_gap(seq_type & seq, typename seq_type::const_iterator pos_it)
 {
-    return seq.insert(pos_it, value_type_t<seq_type>{gap::GAP});
+    return seq.insert(pos_it, value_type_t<seq_type>{gap{}});
 }
 
 /*!\brief An implementation of seqan3::aligned_sequence_concept::insert_gap for sequence containers.
@@ -217,7 +190,7 @@ inline typename seq_type::iterator insert_gap(seq_type & seq,
                                               typename seq_type::const_iterator pos_it,
                                               typename seq_type::size_type size)
 {
-    return seq.insert(pos_it, size, value_type_t<seq_type>{gap::GAP});
+    return seq.insert(pos_it, size, value_type_t<seq_type>{gap{}});
 }
 
 /*!\brief An implementation of seqan3::aligned_sequence_concept::erase_gap for sequence containers.
@@ -244,7 +217,7 @@ template <sequence_container_concept seq_type>
 //!\endcond
 inline typename seq_type::iterator erase_gap(seq_type & seq, typename seq_type::const_iterator pos_it)
 {
-    if (*pos_it != gap::GAP) // [[unlikely]]
+    if (*pos_it != gap{}) // [[unlikely]]
         throw gap_erase_failure("The position to be erased does not contain a gap.");
 
     return seq.erase(pos_it);
@@ -278,7 +251,7 @@ inline typename seq_type::iterator erase_gap(seq_type & seq,
                                              typename seq_type::const_iterator last)
 {
     for (auto it = first; it != last; ++it)
-        if (*it != gap::GAP) // [[unlikely]]
+        if (*it != gap{}) // [[unlikely]]
             throw gap_erase_failure("The range to be erased contains at least one non-gap character.");
 
     return seq.erase(first, last);

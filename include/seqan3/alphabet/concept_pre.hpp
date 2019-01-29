@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Hannes Hauswedell <hannes.hauswedell AT fu-berlin.de>
@@ -47,7 +20,7 @@
  * If you include `concept.hpp` before your definitions, than your type will
  * not be resolved as satisfying seqan3::alphabet_concept.
  *
- * This is not true for custom alphabets implementing the interfaces as
+ * This is not `true` for custom alphabets implementing the interfaces as
  * member functions/variables/types.
  */
 
@@ -77,7 +50,16 @@ namespace seqan3
  * \attention This is the base template, it needs to be specialised.
  */
 template <typename semi_alphabet_type>
-struct underlying_rank{};
+struct underlying_rank
+{};
+
+template <typename semi_alphabet_type>
+struct underlying_rank<semi_alphabet_type &> : underlying_rank<semi_alphabet_type>
+{};
+
+template <typename semi_alphabet_type>
+struct underlying_rank<semi_alphabet_type &&> : underlying_rank<semi_alphabet_type>
+{};
 
 /*!\brief The `rank_type` of the semi_alphabet. [type metafunction shortcut]
  * \ingroup alphabet
@@ -101,7 +83,16 @@ using underlying_rank_t = typename underlying_rank<semi_alphabet_type>::type;
  * \attention This is the base template, it needs to be specialised.
  */
 template <typename alphabet_type>
-struct alphabet_size{};
+struct alphabet_size
+{};
+
+template <typename alphabet_type>
+struct alphabet_size<alphabet_type &> : alphabet_size<alphabet_type>
+{};
+
+template <typename alphabet_type>
+struct alphabet_size<alphabet_type &&> : alphabet_size<alphabet_type>
+{};
 
 /*!\brief The size of the alphabet. [value metafunction shortcut]
  * \tparam alphabet_type Must satisfy seqan3::semi_alphabet_concept.
@@ -115,7 +106,7 @@ template <typename alphabet_type>
 //!\endcond
 constexpr auto alphabet_size_v = alphabet_size<alphabet_type>::value;
 
-/*!\fn rank_type seqan3::to_rank(semi_alphabet_concept const alph)
+/*!\fn rank_type seqan3::to_rank(semi_alphabet_type const alph) noexcept
  * \brief Returns the alphabet letter's value in rank representation.
  * \ingroup alphabet
  * \param alph The alphabet letter that you wish to convert to rank.
@@ -124,10 +115,12 @@ constexpr auto alphabet_size_v = alphabet_size<alphabet_type>::value;
  * \details
  * \attention This is a concept requirement, not an actual function (however types satisfying this concept
  * will provide an implementation).
+ *
+ * This function is required to not throw and be marked as `noexcept`.
  */
 // just implement the interface
 
-/*!\fn semi_alphabet_concept && seqan3::assign_rank(semi_alphabet_concept && alph, rank_type const rank)
+/*!\fn semi_alphabet_type && seqan3::assign_rank(semi_alphabet_type && alph, rank_type const rank) noexcept
  * \brief Returns the alphabet letter's value in rank representation.
  * \ingroup alphabet
  * \param alph The alphabet letter that you wish to assign to.
@@ -137,6 +130,11 @@ constexpr auto alphabet_size_v = alphabet_size<alphabet_type>::value;
  * \details
  * \attention This is a concept requirement, not an actual function (however types satisfying this concept
  * will provide an implementation).
+ *
+ *   * This function is required to not throw and be marked as `noexcept`.
+ *   * Assigning rank values that are larger than or equal to the alphabet's size may be undefined behaviour.
+ *   * Implementations that wish to avoid undefined behaviour cannot throw exceptions, but may use contracts or
+ *     assertions, or simply convert all invalid rank values to valid ones.
  */
 // just implement the interface
 //!\}
@@ -161,7 +159,16 @@ constexpr auto alphabet_size_v = alphabet_size<alphabet_type>::value;
  * \attention This is the base template, it needs to be specialised.
  */
 template <typename alphabet_type>
-struct underlying_char{};
+struct underlying_char
+{};
+
+template <typename alphabet_type>
+struct underlying_char<alphabet_type &> : underlying_char<alphabet_type>
+{};
+
+template <typename alphabet_type>
+struct underlying_char<alphabet_type &&> : underlying_char<alphabet_type>
+{};
 
 /*!\brief The `char_type` of the alphabet. [type metafunction shortcut]
  * \ingroup alphabet
@@ -171,7 +178,7 @@ struct underlying_char{};
 template <typename alphabet_type>
 using underlying_char_t = typename underlying_char<alphabet_type>::type;
 
-/*!\fn char_type seqan3::to_char(alphabet_concept const alph)
+/*!\fn char_type seqan3::to_char(alphabet_type const alph) noexcept
  * \brief Returns the alphabet letter's value in character representation.
  * \ingroup alphabet
  * \param alph The alphabet letter that you wish to convert to char.
@@ -180,11 +187,13 @@ using underlying_char_t = typename underlying_char<alphabet_type>::type;
  * \details
  * \attention This is a concept requirement, not an actual function (however types satisfying this concept
  * will provide an implementation).
+ *
+ * This function is required to not throw and be marked as `noexcept`.
  */
 // just implement the interface
 
-/*!\fn alphabet_concept && seqan3::assign_char(alphabet_concept && alph, char_type const chr)
- * \brief Returns the alphabet letter's value in character representation.
+/*!\fn alphabet_type && seqan3::assign_char(alphabet_type && alph, char_type const chr) noexcept
+ * \brief Assigns a character value to an alphabet object.
  * \ingroup alphabet
  * \param alph The alphabet letter that you wish to assign to.
  * \param chr The `char` you wish to assign.
@@ -193,6 +202,44 @@ using underlying_char_t = typename underlying_char<alphabet_type>::type;
  * \details
  * \attention This is a concept requirement, not an actual function (however types satisfying this concept
  * will provide an implementation).
+ *
+ *   * This function is required to not throw and be marked as `noexcept`.
+ *   * This function is required to accept all values of the character type (in addition to not throwing, it may
+ *     not assert or prevent invalid character values via contracts).
+ *   * All character values must leave the alphabet object in a valid and defined state; implementations typically
+ *     convert invalid characters to valid characters before assignment.
+ */
+// just implement the interface
+
+/*!\fn alphabet_type && seqan3::assign_char_strict(alphabet_type && alph, char_type const chr)
+ * \brief Assigns a character value to an alphabet object.
+ * \ingroup alphabet
+ * \param alph The alphabet letter that you wish to assign to.
+ * \param chr The `char` you wish to assign.
+ * \returns A reference to `alph` or a temporary if `alph` was a temporary.
+ *
+ * \details
+ * \attention This is a concept requirement, not an actual function (however types satisfying this concept
+ * will provide an implementation).
+ *
+ * Typical implementations of this function throw seqan3::invalid_char_assignment if seqan3::char_is_valid_for returns
+ * `false` and call seqan3::assign_char otherwise, but as it is not required that seqan3::char_is_valid_for ever return
+ * `false` for a given alphabet, this function may also be implemented as simply forwarding to seqan3::assign_char.
+ */
+// just implement the interface
+
+/*!\fn bool seqan3::char_is_valid_for<alphabet_type>(char_type const chr) noexcept
+ * \brief Whether the given character value represents a value of the given alphabet.
+ * \ingroup alphabet
+ * \tparam alphabet_type The alphabet type to query.
+ * \param chr The character value to query.
+ * \returns `true` if the given character has a one-to-one mapping to an alphabet value, `false` otherwise.
+ *
+ * \details
+ * \attention This is a concept requirement, not an actual function (however types satisfying this concept
+ * will provide an implementation).
+ *
+ * This function is required to not throw and be marked as `noexcept`.
  */
 // just implement the interface
 
@@ -210,7 +257,7 @@ using underlying_char_t = typename underlying_char<alphabet_type>::type;
 /*!\brief Metafunction that indicates to what extent an alphabet can handle pseudoknots.
  * [value metafunction base template]
  * \tparam alphabet_type The alphabet type whose pseudoknot ability is queried.
- * \ingroup alphabet
+ * \ingroup structure
  * \details The value is the maximum allowed depth of pseudoknots.
  * A value of 1 denotes no pseudoknots `((....))`,
  * while higher values denote the maximum allowed complexity of
@@ -228,7 +275,7 @@ template<typename alphabet_type>
 struct max_pseudoknot_depth{};
 
 /*!\brief The pseudoknot ability of the alphabet. [value metafunction shortcut]
- * \ingroup alphabet
+ * \ingroup structure
  *
  * \attention Do not specialise this shortcut, instead specialise seqan3::max_pseudoknot_depth.
  */

@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Hannes Hauswedell <hannes.hauswedell AT fu-berlin.de>
@@ -105,7 +78,7 @@ public:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    constexpr qualified() = default;
+    constexpr qualified() noexcept : base_type{} {}
     constexpr qualified(qualified const &) = default;
     constexpr qualified(qualified &&) = default;
     constexpr qualified & operator =(qualified const &) = default;
@@ -124,27 +97,34 @@ public:
     using base_type::operator>;
 
     //!\copydoc cartesian_composition::cartesian_composition(component_type const alph)
-    SEQAN3_DOXYGEN_ONLY(( constexpr qualified(component_type const alph) {} ))
+    SEQAN3_DOXYGEN_ONLY(( constexpr qualified(component_type const alph) noexcept {} ))
     //!\copydoc cartesian_composition::cartesian_composition(indirect_component_type const alph)
-    SEQAN3_DOXYGEN_ONLY(( constexpr qualified(indirect_component_type const alph) {} ))
+    SEQAN3_DOXYGEN_ONLY(( constexpr qualified(indirect_component_type const alph) noexcept {} ))
     //!\copydoc cartesian_composition::operator=(component_type const alph)
-    SEQAN3_DOXYGEN_ONLY(( constexpr qualified & operator=(component_type const alph) {} ))
+    SEQAN3_DOXYGEN_ONLY(( constexpr qualified & operator=(component_type const alph) noexcept {} ))
     //!\copydoc cartesian_composition::operator=(indirect_component_type const alph)
-    SEQAN3_DOXYGEN_ONLY(( constexpr qualified & operator=(indirect_component_type const alph) {} ))
+    SEQAN3_DOXYGEN_ONLY(( constexpr qualified & operator=(indirect_component_type const alph) noexcept {} ))
     //!\}
 
     /*!\name Write functions
      * \{
      */
     //!\brief Assign from a character. This modifies the internal sequence letter.
-    constexpr qualified & assign_char(char_type const c)
+    constexpr qualified & assign_char(char_type const c) noexcept
     {
         seqan3::assign_char(get<0>(*this), c);
         return *this;
     }
 
+    //!\brief Strict assign from a character. This modifies the internal sequence letter.
+    qualified & assign_char_strict(char_type const c)
+    {
+        seqan3::assign_char_strict(get<0>(*this), c);
+        return *this;
+    }
+
     //!\brief Assign from a phred value. This modifies the internal quality letter.
-    constexpr qualified & assign_phred(phred_type const c)
+    constexpr qualified & assign_phred(phred_type const c) noexcept
     {
         seqan3::assign_phred(get<1>(*this), c);
         return *this;
@@ -177,6 +157,12 @@ public:
         return qualified{complement(get<0>(*this)), get<1>(*this)};
     }
     //!\}
+
+    //!\brief Validate whether a character is valid in the sequence alphabet.
+    static constexpr bool char_is_valid(char_type const c) noexcept
+    {
+        return char_is_valid_for<sequence_alphabet_type>(c);
+    }
 };
 
 //!\brief Type deduction guide enables usage of qualified without specifying template args.

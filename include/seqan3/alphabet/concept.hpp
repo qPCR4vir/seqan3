@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Hannes Hauswedell <hannes.hauswedell AT fu-berlin.de>
@@ -90,25 +63,24 @@ namespace seqan3
  * Types that satisfy this concept are shown as "implementing this interface".
  */
 //!\cond
-//TODO(rrahn): Change to template <typename t2, typename t = std::remove_reference_t<t2>>
-// in order to get rid of the remove_reference_t within the concept, after the ICE
-// get's fixed. See issue #228
 template <typename t>
-concept semi_alphabet_concept = std::Regular<std::remove_reference_t<t>> &&
+SEQAN3_CONCEPT semi_alphabet_concept = std::Regular<std::remove_reference_t<t>> &&
                                 std::StrictTotallyOrdered<t> &&
-                                requires (t t1, t t2)
+                                requires (t v)
 {
-
     // static data members
-    alphabet_size<std::remove_reference_t<t>>::value;
-    alphabet_size_v<std::remove_reference_t<t>>;
+    alphabet_size<t>::value;
+    alphabet_size_v<t>;
 
     // conversion to rank
-    { to_rank(t1) } -> underlying_rank_t<std::remove_reference_t<t>>;
+    requires           noexcept(to_rank(v));
+    requires std::Same<decltype(to_rank(v)), underlying_rank_t<t>>;
 
     // assignment from rank
-    { assign_rank(t1,  0) }                          -> std::remove_reference_t<t> &;
-    { assign_rank(std::remove_reference_t<t>{}, 0) } -> std::remove_reference_t<t> &&;
+    requires           noexcept(assign_rank(v,                            0));
+    requires           noexcept(assign_rank(std::remove_reference_t<t>{}, 0));
+    requires std::Same<decltype(assign_rank(v,                            0)), std::remove_reference_t<t> &>;
+    requires std::Same<decltype(assign_rank(std::remove_reference_t<t>{}, 0)), std::remove_reference_t<t>  >;
 };
 //!\endcond
 
@@ -142,18 +114,25 @@ concept semi_alphabet_concept = std::Regular<std::remove_reference_t<t>> &&
  * Types that satisfy this concept are shown as "implementing this interface".
  */
 //!\cond
-//TODO(rrahn): Change to template <typename t2, typename t = std::remove_reference_t<t2>>
-// in order to get rid of the remove_reference_t within the concept, after the ICE
-// get's fixed. See issue #228
 template <typename t>
-concept alphabet_concept = semi_alphabet_concept<t> && requires (t t1, t t2)
+SEQAN3_CONCEPT alphabet_concept = semi_alphabet_concept<t> && requires (t v)
 {
     // conversion to char
-    { to_char(t1) } -> underlying_char_t<std::remove_reference_t<t>>;
+    requires           noexcept(to_char(v));
+    requires std::Same<decltype(to_char(v)), underlying_char_t<t>>;
 
     // assignment from char
-    { assign_char(t1,  0) }                          -> std::remove_reference_t<t> &;
-    { assign_char(std::remove_reference_t<t>{}, 0) } -> std::remove_reference_t<t> &&;
+    requires           noexcept(assign_char(v,                            0));
+    requires           noexcept(assign_char(std::remove_reference_t<t>{}, 0));
+    requires std::Same<decltype(assign_char(v,                            0)), std::remove_reference_t<t> &>;
+    requires std::Same<decltype(assign_char(std::remove_reference_t<t>{}, 0)), std::remove_reference_t<t>  >;
+
+    // chars can be checked for validity
+    requires std::Same<decltype(char_is_valid_for<t>(char{0})), bool>;
+
+    // strict assignment from char
+    requires std::Same<decltype(assign_char_strict(v,                            0)), std::remove_reference_t<t> &>;
+    requires std::Same<decltype(assign_char_strict(std::remove_reference_t<t>{}, 0)), std::remove_reference_t<t>  >;
 };
 //!\endcond
 
@@ -205,7 +184,7 @@ void CEREAL_LOAD_MINIMAL_FUNCTION_NAME(archive_t const &,
                                        underlying_rank_t<detail::strip_cereal_wrapper_t<wrapped_alphabet_t>> const & r)
     requires semi_alphabet_concept<detail::strip_cereal_wrapper_t<wrapped_alphabet_t>>
 {
-    assign_rank(static_cast<detail::strip_cereal_wrapper_t<wrapped_alphabet_t>&&>(l), r);
+    assign_rank(static_cast<detail::strip_cereal_wrapper_t<wrapped_alphabet_t> &>(l), r);
 }
 /*!\}
  * \endcond
@@ -224,8 +203,8 @@ namespace seqan3::detail
  * \ingroup alphabet
  * \extends seqan3::semi_alphabet_concept
  *
- * The same as seqan3::semi_alphabet_concept, except that all required functions are also required to be
- * `constexpr`-qualified.
+ * The same as seqan3::semi_alphabet_concept, except that all required functions are also required to be callable
+ * in a `constexpr`-context.
  *
  * \par Concepts and doxygen
  *
@@ -234,7 +213,7 @@ namespace seqan3::detail
  */
 //!\cond
 template <typename t>
-concept constexpr_semi_alphabet_concept = semi_alphabet_concept<t> && requires
+SEQAN3_CONCEPT constexpr_semi_alphabet_concept = semi_alphabet_concept<t> && requires
 {
     // currently only tests rvalue interfaces, because we have no constexpr values in this scope to get references to
     requires SEQAN3_IS_CONSTEXPR(to_rank(std::remove_reference_t<t>{}));
@@ -252,8 +231,16 @@ concept constexpr_semi_alphabet_concept = semi_alphabet_concept<t> && requires
  * \extends seqan3::detail::constexpr_semi_alphabet_concept
  * \extends seqan3::alphabet_concept
  *
- * The same as seqan3::alphabet_concept, except that all required functions are also required to be
- * `constexpr`-qualified.
+ * The same as seqan3::alphabet_concept, except that the following interface requirements are also required to be
+ * callable in a `constexpr`-context:
+ *
+ *   * seqan3::alphabet_concept::to_char
+ *   * seqan3::alphabet_concept::assign_char
+ *   * seqan3::alphabet_concept::char_is_valid_for
+ *
+ * The only exception is:
+ *
+ *   * seqan3::alphabet_concept::assign_char_strict
  *
  * \par Concepts and doxygen
  *
@@ -262,14 +249,14 @@ concept constexpr_semi_alphabet_concept = semi_alphabet_concept<t> && requires
  */
 //!\cond
 template <typename t>
-concept constexpr_alphabet_concept = constexpr_semi_alphabet_concept<t> &&
+SEQAN3_CONCEPT constexpr_alphabet_concept = constexpr_semi_alphabet_concept<t> &&
                                      alphabet_concept<t> &&
                                      requires
 {
     // currently only tests rvalue interfaces, because we have no constexpr values in this scope to get references to
     requires SEQAN3_IS_CONSTEXPR(to_char(std::remove_reference_t<t>{}));
-    requires SEQAN3_IS_CONSTEXPR(assign_char(std::remove_reference_t<t>{},
-                                             underlying_char_t<std::remove_reference_t<t>>{}));
+    requires SEQAN3_IS_CONSTEXPR(assign_char(std::remove_reference_t<t>{}, underlying_char_t<t>{}));
+    requires SEQAN3_IS_CONSTEXPR(char_is_valid_for<t>(char{0}));
 };
 //!\endcond
 

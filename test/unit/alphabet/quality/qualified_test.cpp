@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------------------------------
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
 // This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
 // -----------------------------------------------------------------------------------------------------
@@ -12,6 +12,7 @@
 #include <seqan3/alphabet/gap/gapped.hpp>
 #include <seqan3/alphabet/nucleotide/dna4.hpp>
 #include <seqan3/alphabet/quality/phred42.hpp>
+#include <seqan3/alphabet/quality/phred63.hpp>
 #include <seqan3/alphabet/quality/aliases.hpp>
 #include <seqan3/alphabet/quality/qualified.hpp>
 

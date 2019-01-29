@@ -1,36 +1,9 @@
-// ============================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ============================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ============================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 /*!\file
  * \author Joerg Winkler <j.winkler AT fu-berlin.de>
@@ -79,7 +52,7 @@ namespace seqan3
  * X = unknown
  *
  * \par Usage
- * The following code example creates a dssp9 vector, modifies it, and prints the result to stdout.
+ * The following code example creates a dssp9 vector, modifies it, and prints the result to stderr.
  * \snippet test/snippet/alphabet/structure/dssp9.cpp general
  */
 class dssp9 : public alphabet_base<dssp9, 9>
@@ -95,28 +68,12 @@ public:
     /*!\name Constructors, destructor and assignment
      * \{
      */
-    constexpr dssp9() : base_t{} {}
+    constexpr dssp9() noexcept : base_t{} {}
     constexpr dssp9(dssp9 const &) = default;
     constexpr dssp9(dssp9 &&) = default;
     constexpr dssp9 & operator=(dssp9 const &) = default;
     constexpr dssp9 & operator=(dssp9 &&) = default;
     ~dssp9() = default;
-    //!\}
-
-    /*!\name Letter values
-     * \brief Static member "letters" that can be assigned to the alphabet or used in aggregate initialization.
-     * \details Similar to an Enum interface. *Don't worry about the `internal_type`.*
-     */
-    //!\{
-    static const dssp9 H;
-    static const dssp9 B;
-    static const dssp9 E;
-    static const dssp9 G;
-    static const dssp9 I;
-    static const dssp9 T;
-    static const dssp9 S;
-    static const dssp9 C;
-    static const dssp9 X;
     //!\}
 
 protected:
@@ -137,7 +94,7 @@ protected:
 
             // initialize with X (std::array::fill unfortunately not constexpr)
             for (rank_type & rnk : ret)
-                rnk = 8;
+                rnk = 8u;
 
             // reverse mapping for characters
             for (rank_type rnk = 0u; rnk < value_size; ++rnk)
@@ -150,36 +107,17 @@ protected:
     };
 };
 
-constexpr dssp9 dssp9::H = dssp9{}.assign_char('H');
-constexpr dssp9 dssp9::B = dssp9{}.assign_char('B');
-constexpr dssp9 dssp9::E = dssp9{}.assign_char('E');
-constexpr dssp9 dssp9::G = dssp9{}.assign_char('G');
-constexpr dssp9 dssp9::I = dssp9{}.assign_char('I');
-constexpr dssp9 dssp9::T = dssp9{}.assign_char('T');
-constexpr dssp9 dssp9::S = dssp9{}.assign_char('S');
-constexpr dssp9 dssp9::C = dssp9{}.assign_char('C');
-constexpr dssp9 dssp9::X = dssp9{}.assign_char('X');
-
-} // namespace seqan3
-
-// ------------------------------------------------------------------
-// literals
-// ------------------------------------------------------------------
-
-namespace seqan3
-{
-
-/*!\brief dssp9 literal
+/*!\name Literals
+ * \{
+ *
+ * \brief The seqan3::dssp9 string literal.
  * \relates seqan3::dssp9
+ * \param[in] str A pointer to the character string to assign.
+ * \param[in] len The size of the character string to assign.
  * \returns std::vector<seqan3::dssp9>
  *
- * You can use this string literal to easily assign to a vector of dssp9 characters:
- *
- *```.cpp
- *     std::vector<dssp9> foo{"EHHHHT"_dssp9};
- *     std::vector<dssp9> bar = "EHHHHT"_dssp9;
- *     auto bax = "EHHHHT"_dssp9;
- *```
+ * You can use this string literal to easily assign to a vector of seqan3::dssp9 characters:
+ * \snippet test/snippet/alphabet/structure/dssp9.cpp string_literal
  */
 inline std::vector<dssp9> operator""_dssp9(const char * str, std::size_t len)
 {
@@ -191,5 +129,20 @@ inline std::vector<dssp9> operator""_dssp9(const char * str, std::size_t len)
 
     return vec;
 }
+
+/*!\brief The seqan3::dssp9 char literal.
+ * \relates seqan3::dssp9
+ * \param[in] ch The character to represent as dssp.
+ * \returns seqan3::dssp9
+ *
+ * You can use this string literal to assign a seqan3::dssp9 character:
+ * \snippet test/snippet/alphabet/structure/dssp9.cpp char_literal
+ */
+constexpr dssp9 operator""_dssp9(char const ch) noexcept
+{
+    return dssp9{}.assign_char(ch);
+}
+
+//!\}
 
 } // namespace seqan3

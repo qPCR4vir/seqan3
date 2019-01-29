@@ -1,35 +1,9 @@
-# ============================================================================
-#                  SeqAn - The Library for Sequence Analysis
-# ============================================================================
-#
-# Copyright (c) 2006-2018, Knut Reinert & Freie Universitaet Berlin
-# Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-#     * Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-#       its contributors may be used to endorse or promote products derived
-#       from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-# DAMAGE.
-# ============================================================================
+# -----------------------------------------------------------------------------------------------------
+# Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+# Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+# This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+# shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+# -----------------------------------------------------------------------------------------------------
 
 # This file provides functionality common to the different test modules used by
 # SeqAn3. To build tests, run cmake on one of the sub-folders in this directory
@@ -56,7 +30,6 @@ set (SEQAN3_TEST_CLONE_DIR "${PROJECT_BINARY_DIR}/vendor/googletest")
 # see cmake bug https://gitlab.kitware.com/cmake/cmake/issues/15052
 file(MAKE_DIRECTORY ${SEQAN3_BENCHMARK_CLONE_DIR}/include/)
 file(MAKE_DIRECTORY ${SEQAN3_TEST_CLONE_DIR}/googletest/include/)
-file(MAKE_DIRECTORY ${SEQAN3_TEST_CLONE_DIR}/googlemock/include/)
 
 # ----------------------------------------------------------------------------
 # Interface targets for the different test modules in seqan3.
@@ -84,8 +57,7 @@ add_library (seqan3::test::performance ALIAS seqan3_test_performance)
 # needed for unit test cases in seqan3/test/unit
 add_library (seqan3_test_unit INTERFACE)
 target_link_libraries (seqan3_test_unit INTERFACE "seqan3::test" "gtest_main" "gtest")
-target_include_directories (seqan3_test_unit INTERFACE "${SEQAN3_TEST_CLONE_DIR}/googletest/include/"
-                                                       "${SEQAN3_TEST_CLONE_DIR}/googlemock/include/")
+target_include_directories (seqan3_test_unit INTERFACE "${SEQAN3_TEST_CLONE_DIR}/googletest/include/")
 add_library (seqan3::test::unit ALIAS seqan3_test_unit)
 
 # seqan3::test::coverage specifies required flags, includes and libraries
@@ -170,7 +142,7 @@ macro (seqan3_require_test)
     enable_testing ()
 
     set (gtest_project_args ${SEQAN3_EXTERNAL_PROJECT_CMAKE_ARGS})
-    list (APPEND gtest_project_args "-DBUILD_GMOCK=1")
+    list (APPEND gtest_project_args "-DBUILD_GMOCK=0")
 
     # force that libraries are installed to `lib/`, because GNUInstallDirs might install it into `lib64/`
     list (APPEND gtest_project_args "-DCMAKE_INSTALL_LIBDIR=${PROJECT_BINARY_DIR}/lib/")

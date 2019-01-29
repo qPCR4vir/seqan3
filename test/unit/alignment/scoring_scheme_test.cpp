@@ -1,36 +1,9 @@
-// ==========================================================================
-//                 SeqAn - The Library for Sequence Analysis
-// ==========================================================================
-//
-// Copyright (c) 2006-2018, Knut Reinert, FU Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI Molekulare Genetik
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//     * Redistributions of source code must retain the above copyright
-//       notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the
-//       documentation and/or other materials provided with the distribution.
-//     * Neither the name of Knut Reinert or the FU Berlin nor the names of
-//       its contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL KNUT REINERT OR THE FU BERLIN BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-// DAMAGE.
-//
-// ==========================================================================
+// -----------------------------------------------------------------------------------------------------
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
+// This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
+// shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
+// -----------------------------------------------------------------------------------------------------
 
 #include <sstream>
 
@@ -254,12 +227,12 @@ TYPED_TEST(generic, custom)
 
     if constexpr (detail::is_type_specialisation_of_v<TypeParam, aminoacid_scoring_scheme>)
     {
-        EXPECT_EQ(0*0+0,    scheme.score(aa27::A, aa27::A));
-        EXPECT_EQ(0*0+2,    scheme.score(aa27::A, aa27::C));
-        EXPECT_EQ(2*2+0,    scheme.score(aa27::C, aa27::A));
-        EXPECT_EQ(8*8+8,    scheme.score(aa27::I, aa27::I));
-        EXPECT_EQ(0*0+13,   scheme.score(aa27::A, aa27::N));
-        EXPECT_EQ(2*2+1,    scheme.score(aa27::C, aa27::B));
+        EXPECT_EQ(0*0+0,    scheme.score('A'_aa27, 'A'_aa27));
+        EXPECT_EQ(0*0+2,    scheme.score('A'_aa27, 'C'_aa27));
+        EXPECT_EQ(2*2+0,    scheme.score('C'_aa27, 'A'_aa27));
+        EXPECT_EQ(8*8+8,    scheme.score('I'_aa27, 'I'_aa27));
+        EXPECT_EQ(0*0+13,   scheme.score('A'_aa27, 'N'_aa27));
+        EXPECT_EQ(2*2+1,    scheme.score('C'_aa27, 'B'_aa27));
     } else
     {
         EXPECT_EQ(0*0+0,    scheme.score('A'_dna15, 'A'_dna15)); // A is 0th
@@ -291,10 +264,10 @@ TYPED_TEST(generic, convertability)
         {
             using nucl_t = std::decay_t<decltype(aa)>;
 
-            EXPECT_EQ(scheme.score(aa27::C,                   aa27::G),
+            EXPECT_EQ(scheme.score('C'_aa27,                  'G'_aa27),
                       scheme.score(nucl_t{}.assign_char('C'), nucl_t{}.assign_char('G')));
-            EXPECT_EQ(scheme.score(aa27::T,                   nucl_t{}.assign_char('T')),
-                      scheme.score(nucl_t{}.assign_char('T'), aa27::T));
+            EXPECT_EQ(scheme.score('T'_aa27,                  nucl_t{}.assign_char('T')),
+                      scheme.score(nucl_t{}.assign_char('T'), 'T'_aa27));
         });
     } else
     {
@@ -378,34 +351,34 @@ TYPED_TEST(aminoacid, similarity_matrix)
 {
     // Test constructor
     aminoacid_scoring_scheme scheme{aminoacid_similarity_matrix::BLOSUM30};
-    EXPECT_EQ( 4,    scheme.score(aa27::A, aa27::A));
-    EXPECT_EQ(-3,    scheme.score(aa27::A, aa27::C));
-    EXPECT_EQ(-3,    scheme.score(aa27::C, aa27::A));
-    EXPECT_EQ( 9,    scheme.score(aa27::D, aa27::D));
-    EXPECT_EQ( 0,    scheme.score(aa27::N, aa27::A));
+    EXPECT_EQ( 4,    scheme.score('A'_aa27, 'A'_aa27));
+    EXPECT_EQ(-3,    scheme.score('A'_aa27, 'C'_aa27));
+    EXPECT_EQ(-3,    scheme.score('C'_aa27, 'A'_aa27));
+    EXPECT_EQ( 9,    scheme.score('D'_aa27, 'D'_aa27));
+    EXPECT_EQ( 0,    scheme.score('N'_aa27, 'A'_aa27));
 
     // Test set function
     scheme.set_similarity_matrix(aminoacid_similarity_matrix::BLOSUM45);
 
-    EXPECT_EQ( 5,    scheme.score(aa27::A, aa27::A));
-    EXPECT_EQ(-1,    scheme.score(aa27::A, aa27::C));
-    EXPECT_EQ(-1,    scheme.score(aa27::C, aa27::A));
-    EXPECT_EQ( 7,    scheme.score(aa27::D, aa27::D));
-    EXPECT_EQ(-1,    scheme.score(aa27::N, aa27::A));
+    EXPECT_EQ( 5,    scheme.score('A'_aa27, 'A'_aa27));
+    EXPECT_EQ(-1,    scheme.score('A'_aa27, 'C'_aa27));
+    EXPECT_EQ(-1,    scheme.score('C'_aa27, 'A'_aa27));
+    EXPECT_EQ( 7,    scheme.score('D'_aa27, 'D'_aa27));
+    EXPECT_EQ(-1,    scheme.score('N'_aa27, 'A'_aa27));
 
     scheme.set_similarity_matrix(aminoacid_similarity_matrix::BLOSUM62);
 
-    EXPECT_EQ( 4,    scheme.score(aa27::A, aa27::A));
-    EXPECT_EQ( 0,    scheme.score(aa27::A, aa27::C));
-    EXPECT_EQ( 0,    scheme.score(aa27::C, aa27::A));
-    EXPECT_EQ( 6,    scheme.score(aa27::D, aa27::D));
-    EXPECT_EQ(-2,    scheme.score(aa27::N, aa27::A));
+    EXPECT_EQ( 4,    scheme.score('A'_aa27, 'A'_aa27));
+    EXPECT_EQ( 0,    scheme.score('A'_aa27, 'C'_aa27));
+    EXPECT_EQ( 0,    scheme.score('C'_aa27, 'A'_aa27));
+    EXPECT_EQ( 6,    scheme.score('D'_aa27, 'D'_aa27));
+    EXPECT_EQ(-2,    scheme.score('N'_aa27, 'A'_aa27));
 
     scheme.set_similarity_matrix(aminoacid_similarity_matrix::BLOSUM80);
 
-    EXPECT_EQ( 7,    scheme.score(aa27::A, aa27::A));
-    EXPECT_EQ(-1,    scheme.score(aa27::A, aa27::C));
-    EXPECT_EQ(-1,    scheme.score(aa27::C, aa27::A));
-    EXPECT_EQ(10,    scheme.score(aa27::D, aa27::D));
-    EXPECT_EQ(-3,    scheme.score(aa27::N, aa27::A));
+    EXPECT_EQ( 7,    scheme.score('A'_aa27, 'A'_aa27));
+    EXPECT_EQ(-1,    scheme.score('A'_aa27, 'C'_aa27));
+    EXPECT_EQ(-1,    scheme.score('C'_aa27, 'A'_aa27));
+    EXPECT_EQ(10,    scheme.score('D'_aa27, 'D'_aa27));
+    EXPECT_EQ(-3,    scheme.score('N'_aa27, 'A'_aa27));
 }

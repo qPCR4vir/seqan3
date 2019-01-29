@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------------------------------
-// Copyright (c) 2006-2018, Knut Reinert & Freie Universität Berlin
-// Copyright (c) 2016-2018, Knut Reinert & MPI für molekulare Genetik
+// Copyright (c) 2006-2019, Knut Reinert & Freie Universität Berlin
+// Copyright (c) 2016-2019, Knut Reinert & MPI für molekulare Genetik
 // This file may be used, modified and/or redistributed under the terms of the 3-clause BSD-License
 // shipped with this file and also available at: https://github.com/seqan/seqan3/blob/master/LICENSE
 // -----------------------------------------------------------------------------------------------------
@@ -39,8 +39,8 @@ TEST(gapped_test, initialise_from_component_alphabet)
     alphabet_t letter6 = {'G'_dna4};
     alphabet_t letter7 = static_cast<alphabet_t>('T'_dna4);
 
-    constexpr alphabet_t letter8{gap::GAP}; // letter3 = 'T'_dna4; does not work
-    alphabet_t letter9{gap::GAP};
+    constexpr alphabet_t letter8{gap{}}; // letter3 = 'T'_dna4; does not work
+    alphabet_t letter9{gap{}};
 
     EXPECT_EQ(letter0.to_rank(), 0);
     EXPECT_EQ(letter1.to_rank(), 1);
@@ -71,7 +71,7 @@ TEST(gapped_test, assign_from_component_alphabet)
     letter = {static_cast<alphabet_t>('T'_dna4)};
     EXPECT_EQ(letter.to_rank(), 3);
 
-    letter = gap::GAP;
+    letter = gap{};
     EXPECT_EQ(letter.to_rank(), 4);
 }
 
