@@ -14,8 +14,6 @@
 
 #include <type_traits>
 
-#include <range/v3/iterator_range.hpp>
-
 #include <sdsl/int_vector.hpp>
 
 #include <seqan3/alphabet/detail/alphabet_proxy.hpp>
@@ -30,6 +28,7 @@
 #include <seqan3/std/concepts>
 #include <seqan3/std/iterator>
 #include <seqan3/std/ranges>
+#include <seqan3/std/view/subrange.hpp>
 
 namespace seqan3
 {
@@ -40,7 +39,7 @@ class debug_stream_type;
 /*!\brief A space-optimised version of std::vector that compresses multiple letters into a single byte.
  * \tparam alphabet_type The value type of the container, must satisfy seqan3::alphabet_concept and not be `&`.
  * \implements seqan3::reservable_container_concept
- * \implements seqan3::cerealisable_concept
+ * \implements seqan3::Cerealisable
  * \ingroup container
  *
  * This class template behaves just like std::vector<alphabet_type> but has an internal representation where
@@ -118,7 +117,7 @@ private:
          * \brief All are explicitly defaulted.
          * \{
          */
-        constexpr reference_proxy_type() noexcept : base_t{} {}
+        constexpr reference_proxy_type() noexcept : base_t{}, internal_proxy{} {}
         constexpr reference_proxy_type(reference_proxy_type const &) = default;
         constexpr reference_proxy_type(reference_proxy_type &&) = default;
         constexpr reference_proxy_type & operator=(reference_proxy_type const &) = default;
@@ -755,7 +754,9 @@ public:
     {
         auto const pos_as_num = std::distance(cbegin(), pos);
 
-        auto v = std::ranges::iterator_range{begin_it, end_it} | seqan3::view::convert<value_type> | seqan3::view::to_rank;
+        auto v = view::subrange<begin_iterator_type, end_iterator_type>{begin_it, end_it}
+               | view::convert<value_type>
+               | view::to_rank;
         data.insert(data.begin() + pos_as_num, seqan3::begin(v), seqan3::end(v));
 
         return begin() + pos_as_num;
@@ -1007,12 +1008,12 @@ public:
 
     /*!\cond DEV
      * \brief Serialisation support function.
-     * \tparam archive_t Type of `archive`; must satisfy seqan3::cereal_archive_concept.
+     * \tparam archive_t Type of `archive`; must satisfy seqan3::CerealArchive.
      * \param archive The archive being serialised from/to.
      *
      * \attention These functions are never called directly, see \ref serialisation for more details.
      */
-    template <cereal_archive_concept archive_t>
+    template <CerealArchive archive_t>
     void CEREAL_SERIALIZE_FUNCTION_NAME(archive_t & archive)
     {
         archive(data); //TODO: data not yet serialisable

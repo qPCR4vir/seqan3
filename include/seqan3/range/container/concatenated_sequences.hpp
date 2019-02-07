@@ -28,6 +28,7 @@
 #include <seqan3/std/iterator>
 #include <seqan3/std/ranges>
 #include <seqan3/std/view/common.hpp>
+#include <seqan3/std/view/subrange.hpp>
 
 #if SEQAN3_WITH_CEREAL
 #include <cereal/types/vector.hpp>
@@ -971,7 +972,9 @@ public:
         if (last - first == 0)
             return begin() + pos_as_num;
 
-        auto const ilist = std::ranges::make_iterator_range(first, last, std::distance(first, last));
+        auto const ilist = view::subrange<begin_iterator_type, end_iterator_type>(first,
+                                                                                  last,
+                                                                                  std::distance(first, last));
 
         data_delimiters.reserve(data_values.size() + ilist.size());
         data_delimiters.insert(data_delimiters.begin() + pos_as_num,
@@ -1270,12 +1273,12 @@ public:
 
     /*!\cond DEV
      * \brief Serialisation support function.
-     * \tparam archive_t Type of `archive`; must satisfy seqan3::cereal_archive_concept.
+     * \tparam archive_t Type of `archive`; must satisfy seqan3::CerealArchive.
      * \param archive The archive being serialised from/to.
      *
      * \attention These functions are never called directly, see \ref serialisation for more details.
      */
-    template <cereal_archive_concept archive_t>
+    template <CerealArchive archive_t>
     void CEREAL_SERIALIZE_FUNCTION_NAME(archive_t & archive)
     {
         archive(data_values, data_delimiters);
